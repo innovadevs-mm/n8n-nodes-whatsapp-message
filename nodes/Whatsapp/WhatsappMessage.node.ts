@@ -45,7 +45,7 @@ export class WhatsappMessage implements INodeType {
 				typeOptions: {
 					rows: 4,
 				},
-				default: ' ',
+				default: 'Un momento por favor, estoy procesando tu solicitud...',
 				required: true,
 				placeholder: 'Escribe tu mensaje de espera...',
 				description: 'Mensaje principal que se enviará',
@@ -63,12 +63,12 @@ export class WhatsappMessage implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'Form-Data',
-						value: 'form-data',
-					},
-					{
 						name: 'Form Urlencoded',
 						value: 'form-urlencoded',
+					},
+					{
+						name: 'Form-Data',
+						value: 'form-data',	
 					},
 					{
 						name: 'JSON',
@@ -202,6 +202,50 @@ export class WhatsappMessage implements INodeType {
 				},
 			},
 			{
+				displayName: 'Interactive Type',
+				name: 'interactive_type',
+				type: 'options',
+				options: [
+					{
+						name: 'Button',
+						value: 'button',
+					},
+					{
+						name: 'List',
+						value: 'list',
+					},
+				],
+				default: 'button',
+				description: 'Tipo de mensaje interactivo',
+				displayOptions: {
+					show: {
+						send_body: [true],
+						body_content_type: ['json'],
+						specify_body: ['fields'],
+						body_message_type: ['interactive'],
+					},
+				},
+			},
+			{
+				displayName: 'Interactive Body Text',
+				name: 'interactive_body_text',
+				type: 'string',
+				typeOptions: {
+					rows: 3,
+				},
+				default: '',
+				placeholder: '¿Qué te gustaría hacer?',
+				description: 'Texto del mensaje interactivo',
+				displayOptions: {
+					show: {
+						send_body: [true],
+						body_content_type: ['json'],
+						specify_body: ['fields'],
+						body_message_type: ['interactive'],
+					},
+				},
+			},
+			{
 				displayName: 'JSON',
 				name: 'body_json',
 				type: 'json',
@@ -262,7 +306,7 @@ export class WhatsappMessage implements INodeType {
 				typeOptions: {
 					rows: 4,
 				},
-				default: '¿Sigues ahí?\nGracias por tu paciencia',
+				default: '¿Sigues ahí? \nTodavía estoy trabajando en ello... \nGracias por tu paciencia ',
 				placeholder: 'Un mensaje por línea...',
 				description: 'Mensajes que se enviarán (uno por línea, se alternarán)',
 				displayOptions: {
@@ -419,19 +463,19 @@ export class WhatsappMessage implements INodeType {
 								}
 
 								mainMessageBody.to = recipientPhone;
-								
-							const body = mainMessageBody as {
-								text?: { body?: string };
-								interactive?: { body?: { text?: string } };
-							};
 
-							if (body.text?.body) {
-								mainMessageText = body.text.body;
-							} else if (body.interactive?.body?.text) {
-								mainMessageText = body.interactive.body.text;
-							} else {
-								mainMessageText = 'Custom body message from parameters';
-							}
+								const body = mainMessageBody as {
+									text?: { body?: string };
+									interactive?: { body?: { text?: string } };
+								};
+
+								if (body.text?.body) {
+									mainMessageText = body.text.body;
+								} else if (body.interactive?.body?.text) {
+									mainMessageText = body.interactive.body.text;
+								} else {
+									mainMessageText = 'Custom body message from parameters';
+								}
 							} else {
 								const bodyMessageType = this.getNodeParameter('body_message_type', i) as string;
 
@@ -585,6 +629,7 @@ export class WhatsappMessage implements INodeType {
 					const waitTimeCheck = this.getNodeParameter('wait_time_check', i) as number;
 					const messageInterval = this.getNodeParameter('message_interval', i) as number;
 					const checkMessagesRaw = this.getNodeParameter('check_message', i) as string;
+					const maxAutoMessages = this.getNodeParameter('max_auto_messages', i) as number;
 
 					const checkMessages = checkMessagesRaw
 						.split('\n')
@@ -601,9 +646,11 @@ export class WhatsappMessage implements INodeType {
 					await sleep(waitTimeCheck * 1000);
 
 					let messageIndex = 0;
+					let messagesSent = 0;
 
 					const firstMessage = checkMessages[messageIndex % checkMessages.length];
 					messageIndex++;
+					messagesSent++;
 
 					const firstAutoBody = {
 						messaging_product: 'whatsapp',
@@ -622,10 +669,16 @@ export class WhatsappMessage implements INodeType {
 					});
 
 					void (async () => {
-						for (let j = 0; j < messageInterval; j++) {
-							await sleep(1000);
+						while (messagesSent < maxAutoMessages) {
+							await sleep(messageInterval * 1000);
+							
+							if (messagesSent >= maxAutoMessages) {
+								break;
+							}
+
 							const currentMessage = checkMessages[messageIndex % checkMessages.length];
 							messageIndex++;
+							messagesSent++;
 
 							const autoBody = {
 								messaging_product: 'whatsapp',
@@ -644,6 +697,7 @@ export class WhatsappMessage implements INodeType {
 									type: 'presence_check',
 								});
 							} catch (error) {
+								void error;	
 							}
 						}
 					})();
