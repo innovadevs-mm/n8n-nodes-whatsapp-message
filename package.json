@@ -13,7 +13,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/MayoB20/n8n-nodes-starter.git"
+		"url": "git+https://github.com/MayoB20/n8n-nodes-starter.git"
 	},
 	"scripts": {
 		"build": "n8n-node build && node build.js",
