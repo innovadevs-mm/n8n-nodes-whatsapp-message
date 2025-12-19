@@ -3,17 +3,17 @@
 	"version": "0.1.3",
 	"description": "WhatsApp Message node for n8n",
 	"license": "MIT",
-	"homepage": "https://github.com/MayoB20/n8n-nodes-starter.git",
+	"homepage": "https://github.com/innovadevs-mm/n8n-nodes-whatsapp-message",
 	"keywords": [
 		"n8n-community-node-package"
 	],
 	"author": {
 		"name": "Maryuri",
-		"email": "maryurialonso11@gmail.com"
+		"email": "aprendices.innovacion@marketmix.com.co"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/MayoB20/n8n-nodes-starter.git"
+		"url": "git+https://github.com/innovadevs-mm/n8n-nodes-whatsapp-message"
 	},
 	"scripts": {
 		"build": "n8n-node build && node build.js",
