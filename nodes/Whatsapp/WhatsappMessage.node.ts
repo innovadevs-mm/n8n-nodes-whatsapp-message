@@ -11,11 +11,11 @@ export class WhatsappMessage implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'WhatsApp Message',
 		name: 'whatsappMessage',
-		icon: 'file:WhatsappMessage.svg',
+		icon: 'file:WhatsappMessage1.png',
 		group: ['transform'],
 		version: 1,
-		subtitle: 'Mensaje de espera',
-		description: 'Envía un mensaje y opcionalmente pregunta si el usuario sigue ahí después de un tiempo',
+		subtitle: '={{$parameter["message_type"]}}',
+		description: 'Envía mensajes de texto, listas o botones interactivos de WhatsApp',
 		defaults: {
 			name: 'WhatsApp Message',
 		},
@@ -39,124 +39,8 @@ export class WhatsappMessage implements INodeType {
 				description: 'Número de teléfono del destinatario (con código de país)',
 			},
 			{
-				displayName: 'Main Message',
-				name: 'main_message',
-				type: 'string',
-				typeOptions: {
-					rows: 4,
-				},
-				default: 'Un momento por favor, estoy procesando tu solicitud...',
-				required: true,
-				placeholder: 'Escribe tu mensaje de espera...',
-				description: 'Mensaje principal que se enviará',
-			},
-			{
-				displayName: 'Send Body',
-				name: 'send_body',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to send a custom body in JSON format',
-			},
-			{
-				displayName: 'Body Content Type',
-				name: 'body_content_type',
-				type: 'options',
-				options: [
-					{
-						name: 'Form Urlencoded',
-						value: 'form-urlencoded',
-					},
-					{
-						name: 'Form-Data',
-						value: 'form-data',
-					},
-					{
-						name: 'JSON',
-						value: 'json',
-					},
-					{
-						name: 'N8n Binary File',
-						value: 'binary',
-					},
-					{
-						name: 'Raw',
-						value: 'raw',
-					},
-				],
-				default: 'json',
-				description: 'Tipo de contenido del body',
-				displayOptions: {
-					show: {
-						send_body: [true],
-					},
-				},
-			},
-			{
-				displayName: 'Specify Body',
-				name: 'specify_body',
-				type: 'options',
-				options: [
-					{
-						name: 'Using Fields Below',
-						value: 'fields',
-					},
-					{
-						name: 'Using JSON',
-						value: 'json',
-					},
-				],
-				default: 'json',
-				description: 'Cómo especificar el body',
-				displayOptions: {
-					show: {
-						send_body: [true],
-						body_content_type: ['json'],
-					},
-				},
-			},
-			{
-				displayName: 'Body Parameters',
-				name: 'body_parameters',
-				type: 'fixedCollection',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: {},
-				placeholder: 'Add Parameter',
-				description: 'Parámetros del body',
-				displayOptions: {
-					show: {
-						send_body: [true],
-						body_content_type: ['json'],
-						specify_body: ['fields'],
-					},
-				},
-				options: [
-					{
-						name: 'parameter',
-						displayName: 'Parameter',
-						values: [
-							{
-								displayName: 'Name',
-								name: 'name',
-								type: 'string',
-								default: '',
-								description: 'Nombre del parámetro',
-							},
-							{
-								displayName: 'Value',
-								name: 'value',
-								type: 'string',
-								default: '',
-								description: 'Valor del parámetro',
-							},
-						],
-					},
-				],
-			},
-			{
 				displayName: 'Message Type',
-				name: 'body_message_type',
+				name: 'message_type',
 				type: 'options',
 				options: [
 					{
@@ -164,120 +48,242 @@ export class WhatsappMessage implements INodeType {
 						value: 'text',
 					},
 					{
-						name: 'Interactive',
-						value: 'interactive',
+						name: 'Interactive List',
+						value: 'list',
 					},
 					{
-						name: 'Template',
-						value: 'template',
+						name: 'Interactive Buttons',
+						value: 'buttons',
 					},
 				],
 				default: 'text',
-				description: 'Tipo de mensaje de WhatsApp',
-				displayOptions: {
-					show: {
-						send_body: [true],
-						body_content_type: ['json'],
-						specify_body: ['fields'],
-					},
-				},
 			},
+			
 			{
-				displayName: 'Body Text',
-				name: 'body_text',
+				displayName: 'Message',
+				name: 'main_message',
 				type: 'string',
 				typeOptions: {
 					rows: 4,
 				},
-				default: '',
-				placeholder: 'Escribe el texto del mensaje...',
-				description: 'Contenido del mensaje',
+				default: 'Un momento por favor',
+				required: true,
 				displayOptions: {
 					show: {
-						send_body: [true],
-						body_content_type: ['json'],
-						specify_body: ['fields'],
-						body_message_type: ['text'],
+						message_type: ['text'],
 					},
 				},
 			},
+
 			{
-				displayName: 'Interactive Type',
-				name: 'interactive_type',
-				type: 'options',
-				options: [
-					{
-						name: 'Button',
-						value: 'button',
-					},
-					{
-						name: 'List',
-						value: 'list',
-					},
-				],
-				default: 'button',
-				description: 'Tipo de mensaje interactivo',
-				displayOptions: {
-					show: {
-						send_body: [true],
-						body_content_type: ['json'],
-						specify_body: ['fields'],
-						body_message_type: ['interactive'],
-					},
-				},
-			},
-			{
-				displayName: 'Interactive Body Text',
-				name: 'interactive_body_text',
+				displayName: 'Body Text',
+				name: 'list_body',
 				type: 'string',
 				typeOptions: {
 					rows: 3,
 				},
-				default: '',
-				placeholder: '¿Qué te gustaría hacer?',
-				description: 'Texto del mensaje interactivo',
+				default: '¿Qué te gustaría hacer?',
+				required: true,
 				displayOptions: {
 					show: {
-						send_body: [true],
-						body_content_type: ['json'],
-						specify_body: ['fields'],
-						body_message_type: ['interactive'],
+						message_type: ['list'],
 					},
 				},
 			},
 			{
-				displayName: 'JSON',
-				name: 'body_json',
-				type: 'json',
-				default: '',
+				displayName: 'Button Text',
+				name: 'list_button',
+				type: 'string',
+				default: 'Ver opciones',
 				required: true,
-				description: 'Body personalizado en formato JSON',
 				displayOptions: {
 					show: {
-						send_body: [true],
-						body_content_type: ['json'],
-						specify_body: ['json'],
+						message_type: ['list'],
 					},
 				},
 			},
+			{
+				displayName: 'Header Type',
+				name: 'list_header_type',
+				type: 'options',
+				options: [
+					{
+						name: 'None',
+						value: 'none',
+					},
+					{
+						name: 'Text',
+						value: 'text',
+					},
+					{
+						name: 'Image',
+						value: 'image',
+					},
+				],
+				default: 'none',
+				displayOptions: {
+					show: {
+						message_type: ['list'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Text',
+				name: 'list_header_text',
+				type: 'string',
+				default: '',
+				placeholder: 'Welcome to our store!',
+				displayOptions: {
+					show: {
+						message_type: ['list'],
+						list_header_type: ['text'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Image URL',
+				name: 'list_header_image_url',
+				type: 'string',
+				default: '',
+				placeholder: 'https://example.com/image.jpg',
+				description: 'Public URL of the image to show in header',
+				displayOptions: {
+					show: {
+						message_type: ['list'],
+						list_header_type: ['image'],
+					},
+				},
+			},
+			{
+				displayName: 'Footer (Optional)',
+				name: 'list_footer',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						message_type: ['list'],
+					},
+				},
+			},
+			{
+				displayName: 'Options (One Per Line)',
+				name: 'list_options_simple',
+				type: 'string',
+				typeOptions: {
+					rows: 6,
+				},
+				default: 'Pizza|pizza_id|Delicious pizza\nPasta|pasta_id|Fresh pasta\nSalad|salad_id|Healthy salad',
+				placeholder: 'Title|id|description',
+				description: 'Format: Title|id|description (one option per line)',
+				required: true,
+				displayOptions: {
+					show: {
+						message_type: ['list'],
+					},
+				},
+			},
+
+			{
+				displayName: 'Body Text',
+				name: 'buttons_body',
+				type: 'string',
+				typeOptions: {
+					rows: 3,
+				},
+				default: '¿Cómo podemos ayudarte?',
+				required: true,
+				displayOptions: {
+					show: {
+						message_type: ['buttons'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Type',
+				name: 'buttons_header_type',
+				type: 'options',
+				options: [
+					{
+						name: 'None',
+						value: 'none',
+					},
+					{
+						name: 'Text',
+						value: 'text',
+					},
+					{
+						name: 'Image',
+						value: 'image',
+					},
+				],
+				default: 'none',
+				displayOptions: {
+					show: {
+						message_type: ['buttons'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Text',
+				name: 'buttons_header_text',
+				type: 'string',
+				default: '',
+				placeholder: 'Welcome!',
+				displayOptions: {
+					show: {
+						message_type: ['buttons'],
+						buttons_header_type: ['text'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Image URL',
+				name: 'buttons_header_image_url',
+				type: 'string',
+				default: '',
+				placeholder: 'https://example.com/image.jpg',
+				description: 'Public URL of the image to show in header',
+				displayOptions: {
+					show: {
+						message_type: ['buttons'],
+						buttons_header_type: ['image'],
+					},
+				},
+			},
+			{
+				displayName: 'Footer (Optional)',
+				name: 'buttons_footer',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						message_type: ['buttons'],
+					},
+				},
+			},
+			{
+				displayName: 'Buttons (One Per Line)',
+				name: 'buttons_options',
+				type: 'string',
+				typeOptions: {
+					rows: 4,
+				},
+				default: 'Sí, me interesa|yes_button\nNo gracias|no_button\nMás información|info_button',
+				placeholder: 'Button Text|button_id',
+				description: 'Format: Button Text|button_id (one button per line, max 3 buttons)',
+				required: true,
+				displayOptions: {
+					show: {
+						message_type: ['buttons'],
+					},
+				},
+			},
+
 			{
 				displayName: 'Send Waiting Messages',
 				name: 'send_presence_check',
 				type: 'boolean',
 				default: false,
-				description: 'Whether to send waiting messages while the workflow continues processing',
-			},
-			{
-				displayName: 'Check for User Response',
-				name: 'check_user_response',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to check if user has responded before sending waiting messages. If enabled, waiting messages will only be sent if the user has NOT responded.',
-				displayOptions: {
-					show: {
-						send_presence_check: [true],
-					},
-				},
 			},
 			{
 				displayName: 'Wait Time Before First Check (Seconds)',
@@ -288,7 +294,6 @@ export class WhatsappMessage implements INodeType {
 					maxValue: 600,
 				},
 				default: 30,
-				description: 'Tiempo de espera antes de enviar el primer mensaje',
 				displayOptions: {
 					show: {
 						send_presence_check: [true],
@@ -304,7 +309,6 @@ export class WhatsappMessage implements INodeType {
 					maxValue: 300,
 				},
 				default: 30,
-				description: 'Intervalo entre mensajes',
 				displayOptions: {
 					show: {
 						send_presence_check: [true],
@@ -318,9 +322,7 @@ export class WhatsappMessage implements INodeType {
 				typeOptions: {
 					rows: 4,
 				},
-				default: '¿Sigues ahí? \nTodavía estoy trabajando en ello... \nGracias por tu paciencia ',
-				placeholder: 'Un mensaje por línea...',
-				description: 'Mensajes que se enviarán (uno por línea, se alternarán)',
+				default: '¿Sigues ahí? \nGracias por tu paciencia ',
 				displayOptions: {
 					show: {
 						send_presence_check: [true],
@@ -336,7 +338,6 @@ export class WhatsappMessage implements INodeType {
 					maxValue: 20,
 				},
 				default: 5,
-				description: 'Número máximo de mensajes a enviar (para evitar spam infinito)',
 				displayOptions: {
 					show: {
 						send_presence_check: [true],
@@ -352,7 +353,6 @@ export class WhatsappMessage implements INodeType {
 					maxValue: 10,
 				},
 				default: 3,
-				description: 'Número de intentos en caso de fallo al enviar',
 			},
 			{
 				displayName: 'Message Wait Time (Seconds)',
@@ -363,7 +363,6 @@ export class WhatsappMessage implements INodeType {
 					maxValue: 60,
 				},
 				default: 2,
-				description: 'Tiempo de espera entre intentos fallidos',
 			},
 		],
 	};
@@ -379,23 +378,16 @@ export class WhatsappMessage implements INodeType {
 				const apiToken = credentials.accessToken as string;
 				const apiVersion = (credentials.version_api as string) || 'v22.0';
 
-				if (!phoneNumberId) {
+				if (!phoneNumberId || !apiToken) {
 					throw new NodeOperationError(
 						this.getNode(),
-						'Phone Number ID no configurado en las credenciales',
-					);
-				}
-				if (!apiToken) {
-					throw new NodeOperationError(
-						this.getNode(),
-						'Token de acceso no configurado en las credenciales',
+						'Credenciales no configuradas',
 					);
 				}
 
 				let recipientPhone = this.getNodeParameter('recive_phone_number', i) as string;
-				const sendBody = this.getNodeParameter('send_body', i) as boolean;
+				const messageType = this.getNodeParameter('message_type', i) as string;
 				const sendPresenceCheck = this.getNodeParameter('send_presence_check', i) as boolean;
-				const checkUserResponse = this.getNodeParameter('check_user_response', i, false) as boolean;
 				const tries = this.getNodeParameter('tries', i) as number;
 				const messageWaitTime = this.getNodeParameter('message_wait_time', i) as number;
 
@@ -403,13 +395,13 @@ export class WhatsappMessage implements INodeType {
 				if (!recipientPhone.startsWith('+')) {
 					throw new NodeOperationError(
 						this.getNode(),
-						'El número debe incluir el código de país con + (ej: +573001234567)',
+						'El número debe incluir el código de país con +',
 					);
 				}
 				if (!/^\+\d{10,15}$/.test(recipientPhone)) {
 					throw new NodeOperationError(
 						this.getNode(),
-						'Formato de teléfono inválido. Debe ser +[código país][número] (10-15 dígitos)',
+						'Formato de teléfono inválido',
 					);
 				}
 
@@ -432,46 +424,22 @@ export class WhatsappMessage implements INodeType {
 								json: true,
 							});
 							return response as Record<string, unknown>;
-						} catch (error) {
+						} catch (error: any) {
 							lastError = error as Error;
+							
+							if (error.response?.data) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`WhatsApp API Error: ${JSON.stringify(error.response.data)}`,
+								);
+							}
+							
 							if (attempt < tries) {
 								await sleep(messageWaitTime * 1000);
 							}
 						}
 					}
-					throw lastError || new NodeOperationError(this.getNode(), 'No se pudo enviar el mensaje después de todos los intentos');
-				};
-
-				const checkForUserMessages = async (): Promise<boolean> => {
-					try {
-						const url = `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`;
-						const response = await this.helpers.httpRequest({
-							method: 'GET',
-							url,
-							headers: {
-								Authorization: `Bearer ${apiToken}`,
-							},
-							qs: {
-								fields: 'messages',
-								limit: 10,
-							},
-							json: true,
-						});
-
-						const messages = response.messages as Array<{
-							from: string;
-							timestamp: string;
-						}> | undefined;
-
-						if (!messages || messages.length === 0) {
-							return false;
-						}
-
-						const userMessages = messages.filter(msg => msg.from === recipientPhone);
-						return userMessages.length > 0;
-					} catch {
-						return false;
-					}
+					throw lastError || new NodeOperationError(this.getNode(), 'No se pudo enviar el mensaje');
 				};
 
 				const sentMessages: Array<{
@@ -484,182 +452,202 @@ export class WhatsappMessage implements INodeType {
 				let mainMessageBody: Record<string, unknown>;
 				let mainMessageText: string;
 
-				if (sendBody) {
-					const bodyContentType = this.getNodeParameter('body_content_type', i) as string;
+				if (messageType === 'buttons') {
+					const buttonsBody = this.getNodeParameter('buttons_body', i) as string;
+					const buttonsHeaderType = this.getNodeParameter('buttons_header_type', i, 'none') as string;
+					const buttonsFooter = this.getNodeParameter('buttons_footer', i, '') as string;
+					const buttonsRaw = this.getNodeParameter('buttons_options', i) as string;
 
-					if (bodyContentType === 'json') {
-						const specifyBody = this.getNodeParameter('specify_body', i) as string;
+					if (!buttonsBody.trim()) {
+						throw new NodeOperationError(this.getNode(), 'Body es requerido');
+					}
 
-						if (specifyBody === 'fields') {
-							const bodyParametersData = this.getNodeParameter('body_parameters', i, {}) as Record<string, unknown>;
-							const parameters = (bodyParametersData?.parameter || []) as Array<{name: string; value: string}>;
+					const buttonLines = buttonsRaw.split('\n').filter(line => line.trim());
+					
+					if (buttonLines.length === 0) {
+						throw new NodeOperationError(this.getNode(), 'Debes agregar al menos un botón');
+					}
 
-							if (parameters.length > 0) {
-								mainMessageBody = {};
+					if (buttonLines.length > 3) {
+						throw new NodeOperationError(this.getNode(), `Máximo 3 botones. Tienes ${buttonLines.length}`);
+					}
 
-								for (const param of parameters) {
-									if (param.name && param.value !== undefined) {
-										try {
-											mainMessageBody[param.name] = JSON.parse(param.value);
-										} catch {
-											mainMessageBody[param.name] = param.value;
-										}
-									}
-								}
+					const buttons = buttonLines.map((line, index) => {
+						const parts = line.split('|').map(p => p.trim());
+						
+						if (parts.length < 2) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Línea ${index + 1}: Formato inválido. Usa: Button Text|button_id`,
+							);
+						}
 
-								mainMessageBody.to = recipientPhone;
+						if (parts[0].length > 20) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Botón ${index + 1}: El texto no puede exceder 20 caracteres`,
+							);
+						}
 
-								const body = mainMessageBody as {
-									text?: { body?: string };
-									interactive?: { body?: { text?: string } };
+						return {
+							type: 'reply',
+							reply: {
+								id: parts[1],
+								title: parts[0],
+							},
+						};
+					});
+
+					const interactive: Record<string, unknown> = {
+						type: 'button',
+						body: { text: buttonsBody.trim() },
+						action: { buttons },
+					};
+
+					if (buttonsHeaderType && buttonsHeaderType !== 'none') {
+						if (buttonsHeaderType === 'text') {
+							const buttonsHeaderText = this.getNodeParameter('buttons_header_text', i, '') as string;
+							if (buttonsHeaderText && buttonsHeaderText.trim().length > 0) {
+								interactive.header = {
+									type: 'text',
+									text: buttonsHeaderText.trim(),
 								};
-
-								if (body.text?.body) {
-									mainMessageText = body.text.body;
-								} else if (body.interactive?.body?.text) {
-									mainMessageText = body.interactive.body.text;
-								} else {
-									mainMessageText = 'Custom body message from parameters';
-								}
-							} else {
-								const bodyMessageType = this.getNodeParameter('body_message_type', i) as string;
-
-								if (bodyMessageType === 'text') {
-									const bodyText = this.getNodeParameter('body_text', i) as string;
-
-									if (!bodyText || bodyText.trim().length === 0) {
-										throw new NodeOperationError(
-											this.getNode(),
-											'El texto del body no puede estar vacío',
-										);
-									}
-
-									mainMessageBody = {
-										messaging_product: 'whatsapp',
-										to: recipientPhone,
-										type: 'text',
-										text: {
-											body: bodyText,
-										},
-									};
-									mainMessageText = bodyText;
-								} else if (bodyMessageType === 'interactive') {
-									const interactiveType = this.getNodeParameter('interactive_type', i) as string;
-									const interactiveBodyText = this.getNodeParameter(
-										'interactive_body_text',
-										i,
-									) as string;
-
-									if (!interactiveBodyText || interactiveBodyText.trim().length === 0) {
-										throw new NodeOperationError(
-											this.getNode(),
-											'El texto del mensaje interactivo no puede estar vacío',
-										);
-									}
-
-									mainMessageBody = {
-										messaging_product: 'whatsapp',
-										to: recipientPhone,
-										type: 'interactive',
-										interactive: {
-											type: interactiveType,
-											body: {
-												text: interactiveBodyText,
-											},
-											action:
-												interactiveType === 'button'
-													? {
-															buttons: [
-																{
-																	type: 'reply',
-																	reply: {
-																		id: 'option_1',
-																		title: 'Opción 1',
-																	},
-																},
-															],
-													  }
-													: {
-															button: 'Ver opciones',
-															sections: [
-																{
-																	title: 'Opciones',
-																	rows: [
-																		{
-																			id: 'row_1',
-																			title: 'Opción 1',
-																			description: 'Descripción',
-																		},
-																	],
-																},
-															],
-													  },
-										},
-									};
-									mainMessageText = interactiveBodyText;
-								} else {
-									throw new NodeOperationError(
-										this.getNode(),
-										'Tipo de mensaje no soportado en Fields',
-									);
-								}
 							}
-						} else {
-							const bodyJson = this.getNodeParameter('body_json', i) as string;
-
-							try {
-								mainMessageBody = JSON.parse(bodyJson) as Record<string, unknown>;
-
-								mainMessageBody.to = recipientPhone;
-
-								const body = mainMessageBody as {
-									text?: { body?: string };
-									interactive?: { body?: { text?: string } };
+						} else if (buttonsHeaderType === 'image') {
+							const buttonsHeaderImageUrl = this.getNodeParameter('buttons_header_image_url', i, '') as string;
+							if (buttonsHeaderImageUrl && buttonsHeaderImageUrl.trim().length > 0) {
+								interactive.header = {
+									type: 'image',
+									image: {
+										link: buttonsHeaderImageUrl.trim(),
+									},
 								};
-
-								if (body.text?.body) {
-									mainMessageText = body.text.body;
-								} else if (body.interactive?.body?.text) {
-									mainMessageText = body.interactive.body.text;
-								} else {
-									mainMessageText = 'Custom body message';
-								}
-							} catch {
-								throw new NodeOperationError(this.getNode(), 'El JSON del body no es válido');
 							}
 						}
-					} else {
-						throw new NodeOperationError(
-							this.getNode(),
-							'Solo se soporta el tipo de contenido JSON en esta versión',
-						);
 					}
+
+					if (buttonsFooter.trim()) {
+						interactive.footer = { text: buttonsFooter.trim() };
+					}
+
+					mainMessageBody = {
+						messaging_product: 'whatsapp',
+						recipient_type: 'individual',
+						to: recipientPhone,
+						type: 'interactive',
+						interactive,
+					};
+
+					mainMessageText = `Buttons: ${buttonsBody}`;
+
+				} else if (messageType === 'list') {
+					const listBody = this.getNodeParameter('list_body', i) as string;
+					const listButton = this.getNodeParameter('list_button', i) as string;
+					const listHeaderType = this.getNodeParameter('list_header_type', i, 'none') as string;
+					const listFooter = this.getNodeParameter('list_footer', i, '') as string;
+					const optionsRaw = this.getNodeParameter('list_options_simple', i) as string;
+
+					if (!listBody.trim() || !listButton.trim()) {
+						throw new NodeOperationError(this.getNode(), 'Body y Button son requeridos');
+					}
+
+					const optionLines = optionsRaw.split('\n').filter(line => line.trim());
+					
+					if (optionLines.length === 0) {
+						throw new NodeOperationError(this.getNode(), 'Debes agregar al menos una opción');
+					}
+
+					if (optionLines.length > 10) {
+						throw new NodeOperationError(this.getNode(), `Máximo 10 opciones. Tienes ${optionLines.length}`);
+					}
+
+					const rows = optionLines.map((line, index) => {
+						const parts = line.split('|').map(p => p.trim());
+						
+						if (parts.length < 2) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Línea ${index + 1}: Formato inválido. Usa: Title|id|description`,
+							);
+						}
+
+						const row: Record<string, string> = {
+							id: parts[1],
+							title: parts[0],
+						};
+
+						if (parts[2]) {
+							row.description = parts[2];
+						}
+
+						return row;
+					});
+
+					const interactive: Record<string, unknown> = {
+						type: 'list',
+						body: { text: listBody.trim() },
+						action: {
+							button: listButton.trim(),
+							sections: [{ rows }],
+						},
+					};
+
+					if (listHeaderType && listHeaderType !== 'none') {
+						if (listHeaderType === 'text') {
+							const listHeaderText = this.getNodeParameter('list_header_text', i, '') as string;
+							if (listHeaderText && listHeaderText.trim().length > 0) {
+								interactive.header = {
+									type: 'text',
+									text: listHeaderText.trim(),
+								};
+							}
+						} else if (listHeaderType === 'image') {
+							const listHeaderImageUrl = this.getNodeParameter('list_header_image_url', i, '') as string;
+							if (listHeaderImageUrl && listHeaderImageUrl.trim().length > 0) {
+								interactive.header = {
+									type: 'image',
+									image: {
+										link: listHeaderImageUrl.trim(),
+									},
+								};
+							}
+						}
+					}
+
+					if (listFooter.trim()) {
+						interactive.footer = { text: listFooter.trim() };
+					}
+
+					mainMessageBody = {
+						messaging_product: 'whatsapp',
+						recipient_type: 'individual',
+						to: recipientPhone,
+						type: 'interactive',
+						interactive,
+					};
+
+					mainMessageText = `Lista: ${listBody}`;
+
 				} else {
 					const mainMessage = this.getNodeParameter('main_message', i) as string;
 
-					if (!mainMessage || mainMessage.trim().length === 0) {
-						throw new NodeOperationError(
-							this.getNode(),
-							'El mensaje principal no puede estar vacío',
-						);
-					}
-					if (mainMessage.length > 4096) {
-						throw new NodeOperationError(
-							this.getNode(),
-							'El mensaje excede el límite de 4096 caracteres',
-						);
+					if (!mainMessage.trim()) {
+						throw new NodeOperationError(this.getNode(), 'El mensaje no puede estar vacío');
 					}
 
 					mainMessageBody = {
 						messaging_product: 'whatsapp',
 						to: recipientPhone,
 						type: 'text',
-						text: {
-							body: mainMessage,
-						},
+						text: { body: mainMessage.trim() },
 					};
-					mainMessageText = mainMessage;
+
+					mainMessageText = mainMessage.trim();
 				}
+
+				console.log('=== MESSAGE BODY ===');
+				console.log(JSON.stringify(mainMessageBody, null, 2));
+				console.log('===================');
 
 				const mainResponse = await sendMessage(mainMessageBody);
 				const messages = mainResponse.messages as Array<{id: string}> | undefined;
@@ -678,39 +666,17 @@ export class WhatsappMessage implements INodeType {
 
 					const checkMessages = checkMessagesRaw
 						.split('\n')
-						.map((msg) => msg.trim())
-						.filter((msg) => msg.length > 0);
+						.map(msg => msg.trim())
+						.filter(msg => msg.length > 0);
 
 					if (checkMessages.length === 0) {
-						throw new NodeOperationError(
-							this.getNode(),
-							'El mensaje de verificación no puede estar vacío',
-						);
+						throw new NodeOperationError(this.getNode(), 'Los mensajes de espera no pueden estar vacíos');
 					}
 
 					await sleep(waitTimeCheck * 1000);
 
 					let messageIndex = 0;
 					let messagesSent = 0;
-
-					if (checkUserResponse) {
-						const hasResponded = await checkForUserMessages();
-						if (hasResponded) {
-							returnData.push({
-								json: {
-									success: true,
-									recipient: recipientPhone,
-									usedCustomBody: sendBody,
-									totalMessagesSent: sentMessages.length,
-									presenceCheckSent: false,
-									userResponded: true,
-									messages: sentMessages,
-									timestamp: new Date().toISOString(),
-								},
-							});
-							continue;
-						}
-					}
 
 					const firstMessage = checkMessages[messageIndex % checkMessages.length];
 					messageIndex++;
@@ -740,13 +706,6 @@ export class WhatsappMessage implements INodeType {
 								break;
 							}
 
-							if (checkUserResponse) {
-								const hasResponded = await checkForUserMessages();
-								if (hasResponded) {
-									break;
-								}
-							}
-
 							const currentMessage = checkMessages[messageIndex % checkMessages.length];
 							messageIndex++;
 							messagesSent++;
@@ -768,7 +727,6 @@ export class WhatsappMessage implements INodeType {
 									type: 'presence_check',
 								});
 							} catch {
-								// Error handled silently - background process for waiting messages
 							}
 						}
 					})();
@@ -778,14 +736,14 @@ export class WhatsappMessage implements INodeType {
 					json: {
 						success: true,
 						recipient: recipientPhone,
-						usedCustomBody: sendBody,
+						messageType,
 						totalMessagesSent: sentMessages.length,
 						presenceCheckSent: sendPresenceCheck,
-						userResponded: checkUserResponse ? await checkForUserMessages() : undefined,
 						messages: sentMessages,
 						timestamp: new Date().toISOString(),
 					},
 				});
+
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({
