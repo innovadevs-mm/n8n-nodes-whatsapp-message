@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-whatsapp-message",
-	"version": "0.1.0",
+	"version": "0.1.4",
 	"description": "WhatsApp Message node for n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/innovadevs-mm/n8n-nodes-whatsapp-message",
@@ -34,7 +34,7 @@
 			"dist/credentials/WhatsappMessageApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/WhatsApp/WhatsappMessage.node.js"
+			"dist/nodes/Whatsapp/WhatsappMessage.node.js"
 		]
 	},
 	"devDependencies": {
