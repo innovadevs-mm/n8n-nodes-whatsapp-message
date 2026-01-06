@@ -11,7 +11,7 @@ export class WhatsappMessage implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'WhatsApp Message',
 		name: 'whatsappMessage',
-		icon: 'file:WhatsappMessage1.png',
+		icon: 'file:WhatsappMessage2.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["message_type"]}}',
@@ -35,7 +35,7 @@ export class WhatsappMessage implements INodeType {
 				name: 'enable_close_detection',
 				type: 'boolean',
 				default: false,
-				description: 'Detecta automáticamente cuando el usuario selecciona una opción de cierre',
+				description: 'Whether the node automatically detects when the user selects a close option',
 			},
 			{
 				displayName: 'Close Option IDs',
@@ -123,28 +123,6 @@ export class WhatsappMessage implements INodeType {
 				},
 			},
 			{
-				displayName: 'Image Source',
-				name: 'text_image_source',
-				type: 'options',
-				options: [
-					{
-						name: 'URL',
-						value: 'url',
-					},
-					{
-						name: 'Base64',
-						value: 'base64',
-					},
-				],
-				default: 'url',
-				displayOptions: {
-					show: {
-						message_type: ['text'],
-						text_include_image: [true],
-					},
-				},
-			},
-			{
 				displayName: 'Image URL',
 				name: 'text_image_url',
 				type: 'string',
@@ -154,25 +132,6 @@ export class WhatsappMessage implements INodeType {
 					show: {
 						message_type: ['text'],
 						text_include_image: [true],
-						text_image_source: ['url'],
-					},
-				},
-			},
-			{
-				displayName: 'Base64 Data',
-				name: 'text_image_base64',
-				type: 'string',
-				typeOptions: {
-					rows: 4,
-				},
-				default: '',
-				placeholder: 'iVBORw0KGgoAAAANS...',
-				description: 'Datos de imagen codificados en Base64',
-				displayOptions: {
-					show: {
-						message_type: ['text'],
-						text_include_image: [true],
-						text_image_source: ['base64'],
 					},
 				},
 			},
@@ -254,28 +213,6 @@ export class WhatsappMessage implements INodeType {
 				},
 			},
 			{
-				displayName: 'Header Image Source',
-				name: 'list_header_image_source',
-				type: 'options',
-				options: [
-					{
-						name: 'URL',
-						value: 'url',
-					},
-					{
-						name: 'Base64',
-						value: 'base64',
-					},
-				],
-				default: 'url',
-				displayOptions: {
-					show: {
-						message_type: ['list'],
-						list_header_type: ['image'],
-					},
-				},
-			},
-			{
 				displayName: 'Header Image URL',
 				name: 'list_header_image_url',
 				type: 'string',
@@ -285,25 +222,6 @@ export class WhatsappMessage implements INodeType {
 					show: {
 						message_type: ['list'],
 						list_header_type: ['image'],
-						list_header_image_source: ['url'],
-					},
-				},
-			},
-			{
-				displayName: 'Header Base64 Data',
-				name: 'list_header_image_base64',
-				type: 'string',
-				typeOptions: {
-					rows: 4,
-				},
-				default: '',
-				placeholder: 'iVBORw0KGgoAAAANS...',
-				description: 'Datos de imagen codificados en Base64',
-				displayOptions: {
-					show: {
-						message_type: ['list'],
-						list_header_type: ['image'],
-						list_header_image_source: ['base64'],
 					},
 				},
 			},
@@ -385,28 +303,6 @@ export class WhatsappMessage implements INodeType {
 				},
 			},
 			{
-				displayName: 'Header Image Source',
-				name: 'buttons_header_image_source',
-				type: 'options',
-				options: [
-					{
-						name: 'URL',
-						value: 'url',
-					},
-					{
-						name: 'Base64',
-						value: 'base64',
-					},
-				],
-				default: 'url',
-				displayOptions: {
-					show: {
-						message_type: ['buttons'],
-						buttons_header_type: ['image'],
-					},
-				},
-			},
-			{
 				displayName: 'Header Image URL',
 				name: 'buttons_header_image_url',
 				type: 'string',
@@ -416,25 +312,6 @@ export class WhatsappMessage implements INodeType {
 					show: {
 						message_type: ['buttons'],
 						buttons_header_type: ['image'],
-						buttons_header_image_source: ['url'],
-					},
-				},
-			},
-			{
-				displayName: 'Header Base64 Data',
-				name: 'buttons_header_image_base64',
-				type: 'string',
-				typeOptions: {
-					rows: 4,
-				},
-				default: '',
-				placeholder: 'iVBORw0KGgoAAAANS...',
-				description: 'Datos de imagen codificados en Base64',
-				displayOptions: {
-					show: {
-						message_type: ['buttons'],
-						buttons_header_type: ['image'],
-						buttons_header_image_source: ['base64'],
 					},
 				},
 			},
@@ -516,28 +393,6 @@ export class WhatsappMessage implements INodeType {
 				},
 			},
 			{
-				displayName: 'Header Image Source',
-				name: 'cta_header_image_source',
-				type: 'options',
-				options: [
-					{
-						name: 'URL',
-						value: 'url',
-					},
-					{
-						name: 'Base64',
-						value: 'base64',
-					},
-				],
-				default: 'url',
-				displayOptions: {
-					show: {
-						message_type: ['cta'],
-						cta_header_type: ['image'],
-					},
-				},
-			},
-			{
 				displayName: 'Header Image URL',
 				name: 'cta_header_image_url',
 				type: 'string',
@@ -547,25 +402,6 @@ export class WhatsappMessage implements INodeType {
 					show: {
 						message_type: ['cta'],
 						cta_header_type: ['image'],
-						cta_header_image_source: ['url'],
-					},
-				},
-			},
-			{
-				displayName: 'Header Base64 Data',
-				name: 'cta_header_image_base64',
-				type: 'string',
-				typeOptions: {
-					rows: 4,
-				},
-				default: '',
-				placeholder: 'iVBORw0KGgoAAAANS...',
-				description: 'Datos de imagen codificados en Base64',
-				displayOptions: {
-					show: {
-						message_type: ['cta'],
-						cta_header_type: ['image'],
-						cta_header_image_source: ['base64'],
 					},
 				},
 			},
@@ -867,58 +703,14 @@ export class WhatsappMessage implements INodeType {
 					throw last_error || new NodeOperationError(this.getNode(), 'No se pudo enviar el mensaje');
 				};
 
-				const ProcessImageSource = async (
-					sourceType: string,
-					urlParam: string | undefined,
-					base64Data: string | undefined
-				): Promise<{link?: string; id?: string}> => {
-					if (sourceType === 'url') {
-						if (!urlParam || !urlParam.trim().startsWith('http')) {
-							throw new NodeOperationError(this.getNode(), 'Image URL invalida o vacia. Debe comenzar con http:// o https://');
-						}
-						return { link: urlParam.trim() };
-					} else if (sourceType === 'base64') {
-						if (!base64Data || !base64Data.trim()) {
-							throw new NodeOperationError(this.getNode(), 'Base64 data vacio');
-						}
-						
-						let cleanBase64 = base64Data.trim();
-						let mimeType = 'image/jpeg';
-						
-						if (cleanBase64.startsWith('data:')) {
-							const matches = cleanBase64.match(/^data:([^;]+);base64,(.+)$/);
-							if (matches) {
-								mimeType = matches[1];
-								cleanBase64 = matches[2];
-							}
-						}
-
-						const FormData = require('form-data');
-						const buffer = Buffer.from(cleanBase64, 'base64');
-						const extension = mimeType.split('/')[1] || 'jpg';
-						const fileName = `image.${extension}`;
-						
-						const formData = new FormData();
-						formData.append('messaging_product', 'whatsapp');
-						formData.append('file', buffer, {
-							filename: fileName,
-							contentType: mimeType,
-						});
-
-						const uploadUrl = `https://graph.facebook.com/${api_version}/${phone_number_id}/media`;
-						const uploadResponse = await this.helpers.httpRequest({
-							method: 'POST',
-							url: uploadUrl,
-							headers: {
-								Authorization: `Bearer ${api_token}`,
-								...formData.getHeaders(),
-							},
-							body: formData,
-						});
-
-						return { id: (uploadResponse as {id: string}).id };
+				const ValidateImageUrl = (url: string | undefined): string => {
+					if (!url || !url.trim().startsWith('http')) {
+						throw new NodeOperationError(
+							this.getNode(),
+							'Image URL invalida o vacia. Debe comenzar con http:// o https://'
+						);
 					}
-					throw new NodeOperationError(this.getNode(), 'Tipo de imagen source invalido');
+					return url.trim();
 				};
 
 				const sent_messages: Array<{
@@ -984,27 +776,13 @@ export class WhatsappMessage implements INodeType {
 					};
 
 					if (buttons_header_type === 'image') {
-						const buttons_header_image_source = this.getNodeParameter('buttons_header_image_source', i, 'url') as string;
 						const buttons_header_image_url = this.getNodeParameter('buttons_header_image_url', i, '') as string;
-						const buttons_header_image_base64 = this.getNodeParameter('buttons_header_image_base64', i, '') as string;
-
-						const imageData = await ProcessImageSource(
-							buttons_header_image_source,
-							buttons_header_image_url,
-							buttons_header_image_base64
-						);
+						const validatedUrl = ValidateImageUrl(buttons_header_image_url);
 						
-						if (imageData.link) {
-							interactive.header = {
-								type: 'image',
-								image: { link: imageData.link },
-							};
-						} else if (imageData.id) {
-							interactive.header = {
-								type: 'image',
-								image: { id: imageData.id },
-							};
-						}
+						interactive.header = {
+							type: 'image',
+							image: { link: validatedUrl },
+						};
 					} else if (buttons_header_type === 'text') {
 						const buttons_header_text = this.getNodeParameter('buttons_header_text', i, '') as string;
 						if (buttons_header_text && buttons_header_text.trim().length > 0) {
@@ -1082,27 +860,13 @@ export class WhatsappMessage implements INodeType {
 					};
 
 					if (list_header_type === 'image') {
-						const list_header_image_source = this.getNodeParameter('list_header_image_source', i, 'url') as string;
 						const list_header_image_url = this.getNodeParameter('list_header_image_url', i, '') as string;
-						const list_header_image_base64 = this.getNodeParameter('list_header_image_base64', i, '') as string;
+						const validatedUrl = ValidateImageUrl(list_header_image_url);
 
-						const imageData = await ProcessImageSource(
-							list_header_image_source,
-							list_header_image_url,
-							list_header_image_base64
-						);
-
-						if (imageData.link) {
-							interactive.header = {
-								type: 'image',
-								image: { link: imageData.link },
-							};
-						} else if (imageData.id) {
-							interactive.header = {
-								type: 'image',
-								image: { id: imageData.id },
-							};
-						}
+						interactive.header = {
+							type: 'image',
+							image: { link: validatedUrl },
+						};
 					} else if (list_header_type === 'text') {
 						const list_header_text = this.getNodeParameter('list_header_text', i, '') as string;
 						if (list_header_text && list_header_text.trim().length > 0) {
@@ -1192,27 +956,13 @@ export class WhatsappMessage implements INodeType {
 					};
 
 					if (cta_header_type === 'image') {
-						const cta_header_image_source = this.getNodeParameter('cta_header_image_source', i, 'url') as string;
 						const cta_header_image_url = this.getNodeParameter('cta_header_image_url', i, '') as string;
-						const cta_header_image_base64 = this.getNodeParameter('cta_header_image_base64', i, '') as string;
-
-						const imageData = await ProcessImageSource(
-							cta_header_image_source,
-							cta_header_image_url,
-							cta_header_image_base64
-						);
+						const validatedUrl = ValidateImageUrl(cta_header_image_url);
 						
-						if (imageData.link) {
-							interactive.header = {
-								type: 'image',
-								image: { link: imageData.link },
-							};
-						} else if (imageData.id) {
-							interactive.header = {
-								type: 'image',
-								image: { id: imageData.id },
-							};
-						}
+						interactive.header = {
+							type: 'image',
+							image: { link: validatedUrl },
+						};
 					} else if (cta_header_type === 'text') {
 						const cta_header_text = this.getNodeParameter('cta_header_text', i, '') as string;
 						if (cta_header_text && cta_header_text.trim().length > 0) {
@@ -1242,23 +992,14 @@ export class WhatsappMessage implements INodeType {
 					const text_include_image = this.getNodeParameter('text_include_image', i, false) as boolean;
 
 					if (text_include_image) {
-						const text_image_source = this.getNodeParameter('text_image_source', i, 'url') as string;
 						const text_image_url = this.getNodeParameter('text_image_url', i, '') as string;
-						const text_image_base64 = this.getNodeParameter('text_image_base64', i, '') as string;
 						const text_image_caption = this.getNodeParameter('text_image_caption', i, '') as string;
 
-						const imageData = await ProcessImageSource(
-							text_image_source,
-							text_image_url,
-							text_image_base64
-						);
+						const validatedUrl = ValidateImageUrl(text_image_url);
 
-						const imageObject: Record<string, string> = {};
-						if (imageData.link) {
-							imageObject.link = imageData.link;
-						} else if (imageData.id) {
-							imageObject.id = imageData.id;
-						}
+						const imageObject: Record<string, string> = {
+							link: validatedUrl,
+						};
 
 						const captionText = text_image_caption.trim() || main_message.trim();
 						if (captionText) {
@@ -1366,8 +1107,7 @@ export class WhatsappMessage implements INodeType {
 									timestamp: new Date().toISOString(),
 									type: 'presence_check',
 								});
-							} catch {
-								// Silently catch errors in background task
+							} catch {//error
 							}
 						}
 					})();
