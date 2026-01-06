@@ -194,7 +194,7 @@ export class WhatsappMessage implements INodeType {
 					},
 				],
 				default: 'none',
-				description: 'Tipo de header. NOTA: Las imagenes en listas se envian como mensaje separado primero (workaround de WhatsApp API)',
+				description: 'Tipo de header. NOTA: Las imagenes en listas se envian como mensaje separado primero (workaround de WhatsApp API).',
 				displayOptions: {
 					show: {
 						message_type: ['list'],
@@ -428,7 +428,7 @@ export class WhatsappMessage implements INodeType {
 				},
 				default: 'Visit Website|url|https://example.com',
 				placeholder: 'Ver sitio|url|https://ejemplo.com',
-				description: 'Formato: Texto del boton|url|URL completa. El texto debe tener maximo 20 caracteres. Solo se permite 1 boton CTA.',
+				description: 'Formato: Texto del boton|URL|URL completa. El texto debe tener maximo 20 caracteres. Solo se permite 1 boton CTA.',
 				displayOptions: {
 					show: {
 						message_type: ['cta'],
