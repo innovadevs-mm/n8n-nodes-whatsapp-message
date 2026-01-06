@@ -21,7 +21,8 @@ export class WhatsappMessage implements INodeType {
 		},
 		usableAsTool: true,
 		inputs: ['main'],
-		outputs: ['main'],
+		outputs: ['main', 'main'],
+		outputNames: ['Continue', 'Close'],
 		credentials: [
 			{
 				name: 'whatsAppBusinessApi',
@@ -30,13 +31,47 @@ export class WhatsappMessage implements INodeType {
 		],
 		properties: [
 			{
+				displayName: 'Enable Close Detection',
+				name: 'enable_close_detection',
+				type: 'boolean',
+				default: false,
+				description: 'Detecta automáticamente cuando el usuario selecciona una opción de cierre',
+			},
+			{
+				displayName: 'Close Option IDs',
+				name: 'close_option_ids',
+				type: 'string',
+				default: '',
+				placeholder: 'exit_id,salir_id,close_id',
+				description: 'IDs de las opciones que cierran la conversación separados por comas',
+				displayOptions: {
+					show: {
+						enable_close_detection: [true],
+					},
+				},
+			},
+			{
+				displayName: 'Goodbye Message',
+				name: 'goodbye_message',
+				type: 'string',
+				typeOptions: {
+					rows: 2,
+				},
+				default: 'Gracias por contactarnos. Hasta pronto',
+				description: 'Mensaje automático que se envía cuando se detecta una opción de cierre',
+				displayOptions: {
+					show: {
+						enable_close_detection: [true],
+					},
+				},
+			},
+			{
 				displayName: 'Recipient Phone Number',
 				name: 'recive_phone_number',
 				type: 'string',
 				default: '',
-				required: true,
 				placeholder: '+573001234567',
-				description: 'Número de teléfono del destinatario (con código de país)',
+				description: 'Número de teléfono del destinatario con código de país',
 			},
 			{
 				displayName: 'Message Type',
@@ -55,10 +90,13 @@ export class WhatsappMessage implements INodeType {
 						name: 'Interactive Buttons',
 						value: 'buttons',
 					},
+					{
+						name: 'Call to Action',
+						value: 'cta',
+					},
 				],
 				default: 'text',
 			},
-			
 			{
 				displayName: 'Message',
 				name: 'main_message',
@@ -67,14 +105,92 @@ export class WhatsappMessage implements INodeType {
 					rows: 4,
 				},
 				default: 'Un momento por favor',
-				required: true,
 				displayOptions: {
 					show: {
 						message_type: ['text'],
 					},
 				},
 			},
-
+			{
+				displayName: 'Include Image',
+				name: 'text_include_image',
+				type: 'boolean',
+				default: false,
+				displayOptions: {
+					show: {
+						message_type: ['text'],
+					},
+				},
+			},
+			{
+				displayName: 'Image Source',
+				name: 'text_image_source',
+				type: 'options',
+				options: [
+					{
+						name: 'URL',
+						value: 'url',
+					},
+					{
+						name: 'Base64',
+						value: 'base64',
+					},
+				],
+				default: 'url',
+				displayOptions: {
+					show: {
+						message_type: ['text'],
+						text_include_image: [true],
+					},
+				},
+			},
+			{
+				displayName: 'Image URL',
+				name: 'text_image_url',
+				type: 'string',
+				default: '',
+				placeholder: 'https://example.com/image.jpg',
+				displayOptions: {
+					show: {
+						message_type: ['text'],
+						text_include_image: [true],
+						text_image_source: ['url'],
+					},
+				},
+			},
+			{
+				displayName: 'Base64 Data',
+				name: 'text_image_base64',
+				type: 'string',
+				typeOptions: {
+					rows: 4,
+				},
+				default: '',
+				placeholder: 'iVBORw0KGgoAAAANS...',
+				description: 'Datos de imagen codificados en Base64',
+				displayOptions: {
+					show: {
+						message_type: ['text'],
+						text_include_image: [true],
+						text_image_source: ['base64'],
+					},
+				},
+			},
+			{
+				displayName: 'Caption',
+				name: 'text_image_caption',
+				type: 'string',
+				typeOptions: {
+					rows: 2,
+				},
+				default: '',
+				displayOptions: {
+					show: {
+						message_type: ['text'],
+						text_include_image: [true],
+					},
+				},
+			},
 			{
 				displayName: 'Body Text',
 				name: 'list_body',
@@ -82,8 +198,7 @@ export class WhatsappMessage implements INodeType {
 				typeOptions: {
 					rows: 3,
 				},
-				default: '¿Qué te gustaría hacer?',
-				required: true,
+				default: 'Que te gustaria hacer',
 				displayOptions: {
 					show: {
 						message_type: ['list'],
@@ -95,7 +210,6 @@ export class WhatsappMessage implements INodeType {
 				name: 'list_button',
 				type: 'string',
 				default: 'Ver opciones',
-				required: true,
 				displayOptions: {
 					show: {
 						message_type: ['list'],
@@ -132,11 +246,32 @@ export class WhatsappMessage implements INodeType {
 				name: 'list_header_text',
 				type: 'string',
 				default: '',
-				placeholder: 'Welcome to our store!',
 				displayOptions: {
 					show: {
 						message_type: ['list'],
 						list_header_type: ['text'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Image Source',
+				name: 'list_header_image_source',
+				type: 'options',
+				options: [
+					{
+						name: 'URL',
+						value: 'url',
+					},
+					{
+						name: 'Base64',
+						value: 'base64',
+					},
+				],
+				default: 'url',
+				displayOptions: {
+					show: {
+						message_type: ['list'],
+						list_header_type: ['image'],
 					},
 				},
 			},
@@ -146,16 +281,34 @@ export class WhatsappMessage implements INodeType {
 				type: 'string',
 				default: '',
 				placeholder: 'https://example.com/image.jpg',
-				description: 'Public URL of the image to show in header',
 				displayOptions: {
 					show: {
 						message_type: ['list'],
 						list_header_type: ['image'],
+						list_header_image_source: ['url'],
 					},
 				},
 			},
 			{
-				displayName: 'Footer (Optional)',
+				displayName: 'Header Base64 Data',
+				name: 'list_header_image_base64',
+				type: 'string',
+				typeOptions: {
+					rows: 4,
+				},
+				default: '',
+				placeholder: 'iVBORw0KGgoAAAANS...',
+				description: 'Datos de imagen codificados en Base64',
+				displayOptions: {
+					show: {
+						message_type: ['list'],
+						list_header_type: ['image'],
+						list_header_image_source: ['base64'],
+					},
+				},
+			},
+			{
+				displayName: 'Footer',
 				name: 'list_footer',
 				type: 'string',
 				default: '',
@@ -166,23 +319,20 @@ export class WhatsappMessage implements INodeType {
 				},
 			},
 			{
-				displayName: 'Options (One Per Line)',
+				displayName: 'Options',
 				name: 'list_options_simple',
 				type: 'string',
 				typeOptions: {
 					rows: 6,
 				},
-				default: 'Pizza|pizza_id|Delicious pizza\nPasta|pasta_id|Fresh pasta\nSalad|salad_id|Healthy salad',
-				placeholder: 'Title|id|description',
-				description: 'Format: Title|id|description (one option per line)',
-				required: true,
+				default: 'Pizza|pizza_id|Delicious pizza\nPasta|pasta_id|Fresh pasta\nSalir|exit_id|Terminar conversacion|true',
+				placeholder: 'Title|ID|description|close',
 				displayOptions: {
 					show: {
 						message_type: ['list'],
 					},
 				},
 			},
-
 			{
 				displayName: 'Body Text',
 				name: 'buttons_body',
@@ -190,8 +340,7 @@ export class WhatsappMessage implements INodeType {
 				typeOptions: {
 					rows: 3,
 				},
-				default: '¿Cómo podemos ayudarte?',
-				required: true,
+				default: 'Como podemos ayudarte',
 				displayOptions: {
 					show: {
 						message_type: ['buttons'],
@@ -228,11 +377,32 @@ export class WhatsappMessage implements INodeType {
 				name: 'buttons_header_text',
 				type: 'string',
 				default: '',
-				placeholder: 'Welcome!',
 				displayOptions: {
 					show: {
 						message_type: ['buttons'],
 						buttons_header_type: ['text'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Image Source',
+				name: 'buttons_header_image_source',
+				type: 'options',
+				options: [
+					{
+						name: 'URL',
+						value: 'url',
+					},
+					{
+						name: 'Base64',
+						value: 'base64',
+					},
+				],
+				default: 'url',
+				displayOptions: {
+					show: {
+						message_type: ['buttons'],
+						buttons_header_type: ['image'],
 					},
 				},
 			},
@@ -242,16 +412,34 @@ export class WhatsappMessage implements INodeType {
 				type: 'string',
 				default: '',
 				placeholder: 'https://example.com/image.jpg',
-				description: 'Public URL of the image to show in header',
 				displayOptions: {
 					show: {
 						message_type: ['buttons'],
 						buttons_header_type: ['image'],
+						buttons_header_image_source: ['url'],
 					},
 				},
 			},
 			{
-				displayName: 'Footer (Optional)',
+				displayName: 'Header Base64 Data',
+				name: 'buttons_header_image_base64',
+				type: 'string',
+				typeOptions: {
+					rows: 4,
+				},
+				default: '',
+				placeholder: 'iVBORw0KGgoAAAANS...',
+				description: 'Datos de imagen codificados en Base64',
+				displayOptions: {
+					show: {
+						message_type: ['buttons'],
+						buttons_header_type: ['image'],
+						buttons_header_image_source: ['base64'],
+					},
+				},
+			},
+			{
+				displayName: 'Footer',
 				name: 'buttons_footer',
 				type: 'string',
 				default: '',
@@ -262,23 +450,151 @@ export class WhatsappMessage implements INodeType {
 				},
 			},
 			{
-				displayName: 'Buttons (One Per Line)',
+				displayName: 'Buttons',
 				name: 'buttons_options',
 				type: 'string',
 				typeOptions: {
 					rows: 4,
 				},
-				default: 'Sí, me interesa|yes_button\nNo gracias|no_button\nMás información|info_button',
-				placeholder: 'Button Text|button_id',
-				description: 'Format: Button Text|button_id (one button per line, max 3 buttons)',
-				required: true,
+				default: 'Si me interesa|yes_button\nNo gracias|no_button|true\nMas informacion|info_button',
+				placeholder: 'Button Text|button_id|close',
 				displayOptions: {
 					show: {
 						message_type: ['buttons'],
 					},
 				},
 			},
-
+			{
+				displayName: 'Body Text',
+				name: 'cta_body',
+				type: 'string',
+				typeOptions: {
+					rows: 3,
+				},
+				default: 'Te gustaria visitarnos',
+				displayOptions: {
+					show: {
+						message_type: ['cta'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Type',
+				name: 'cta_header_type',
+				type: 'options',
+				options: [
+					{
+						name: 'None',
+						value: 'none',
+					},
+					{
+						name: 'Text',
+						value: 'text',
+					},
+					{
+						name: 'Image',
+						value: 'image',
+					},
+				],
+				default: 'none',
+				displayOptions: {
+					show: {
+						message_type: ['cta'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Text',
+				name: 'cta_header_text',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						message_type: ['cta'],
+						cta_header_type: ['text'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Image Source',
+				name: 'cta_header_image_source',
+				type: 'options',
+				options: [
+					{
+						name: 'URL',
+						value: 'url',
+					},
+					{
+						name: 'Base64',
+						value: 'base64',
+					},
+				],
+				default: 'url',
+				displayOptions: {
+					show: {
+						message_type: ['cta'],
+						cta_header_type: ['image'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Image URL',
+				name: 'cta_header_image_url',
+				type: 'string',
+				default: '',
+				placeholder: 'https://example.com/image.jpg',
+				displayOptions: {
+					show: {
+						message_type: ['cta'],
+						cta_header_type: ['image'],
+						cta_header_image_source: ['url'],
+					},
+				},
+			},
+			{
+				displayName: 'Header Base64 Data',
+				name: 'cta_header_image_base64',
+				type: 'string',
+				typeOptions: {
+					rows: 4,
+				},
+				default: '',
+				placeholder: 'iVBORw0KGgoAAAANS...',
+				description: 'Datos de imagen codificados en Base64',
+				displayOptions: {
+					show: {
+						message_type: ['cta'],
+						cta_header_type: ['image'],
+						cta_header_image_source: ['base64'],
+					},
+				},
+			},
+			{
+				displayName: 'Footer',
+				name: 'cta_footer',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						message_type: ['cta'],
+					},
+				},
+			},
+			{
+				displayName: 'Action Buttons',
+				name: 'cta_buttons',
+				type: 'string',
+				typeOptions: {
+					rows: 4,
+				},
+				default: 'Visit Website|url|https://example.com',
+				placeholder: 'Button Text|url|https://example.com',
+				displayOptions: {
+					show: {
+						message_type: ['cta'],
+					},
+				},
+			},
 			{
 				displayName: 'Send Waiting Messages',
 				name: 'send_presence_check',
@@ -322,7 +638,7 @@ export class WhatsappMessage implements INodeType {
 				typeOptions: {
 					rows: 4,
 				},
-				default: '¿Sigues ahí? \nGracias por tu paciencia ',
+				default: 'Sigues ahi\nGracias por tu paciencia',
 				displayOptions: {
 					show: {
 						send_presence_check: [true],
@@ -369,123 +685,286 @@ export class WhatsappMessage implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
-		const returnData: INodeExecutionData[] = [];
+		const continue_data: INodeExecutionData[] = [];
+		const close_data: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const credentials = await this.getCredentials('whatsAppBusinessApi');
-				const phoneNumberId = credentials.phoneNumberId as string;
-				const apiToken = credentials.accessToken as string;
-				const apiVersion = (credentials.version_api as string) || 'v22.0';
+				const item = items[i];
+				const item_json = item.json;
 
-				if (!phoneNumberId || !apiToken) {
+				const is_webhook = item_json.entry && item_json.object === 'whatsapp_business_account';
+
+				if (is_webhook) {
+					const credentials = await this.getCredentials('whatsAppBusinessApi');
+					const phone_number_id = credentials.phoneNumberId as string;
+					const api_token = credentials.accessToken as string;
+					const api_version = (credentials.version_api as string) || 'v22.0';
+
+					const webhook_entry = item_json.entry as Array<Record<string, unknown>>;
+					if (!webhook_entry || webhook_entry.length === 0) {
+						continue_data.push(item);
+						continue;
+					}
+
+					const changes = webhook_entry[0].changes as Array<Record<string, unknown>>;
+					if (!changes || changes.length === 0) {
+						continue_data.push(item);
+						continue;
+					}
+
+					const value = changes[0].value as {messages?: Array<Record<string, unknown>>};
+					const messages = value?.messages;
+					if (!messages || messages.length === 0) {
+						continue_data.push(item);
+						continue;
+					}
+
+					const user_message = messages[0];
+					const recipient_phone = user_message.from as string;
+
+					let selected_id = '';
+					if (user_message.type === 'interactive') {
+						const interactive = user_message.interactive as Record<string, unknown>;
+						if (interactive?.type === 'button_reply') {
+							const button_reply = interactive.button_reply as {id: string};
+							selected_id = button_reply.id;
+						} else if (interactive?.type === 'list_reply') {
+							const list_reply = interactive.list_reply as {id: string};
+							selected_id = list_reply.id;
+						}
+					}
+
+					const enable_close_detection = this.getNodeParameter('enable_close_detection', i, false) as boolean;
+					let is_close_action = false;
+
+					if (enable_close_detection && selected_id) {
+						const close_option_ids_param = this.getNodeParameter('close_option_ids', i, '') as string;
+						if (close_option_ids_param.trim()) {
+							const close_ids = close_option_ids_param.split(',').map(id => id.trim());
+							is_close_action = close_ids.includes(selected_id);
+						}
+					}
+
+					const output_data: INodeExecutionData = {
+						json: {
+							...item_json,
+							selectedId: selected_id,
+							isCloseAction: is_close_action,
+							webhookProcessed: true,
+							recipient: recipient_phone,
+						},
+					};
+
+					if (is_close_action) {
+						const goodbye_message = this.getNodeParameter('goodbye_message', i, '') as string;
+						if (goodbye_message.trim()) {
+							const goodbye_body = {
+								messaging_product: 'whatsapp',
+								to: recipient_phone,
+								type: 'text',
+								text: { body: goodbye_message.trim() },
+							};
+
+							const url = `https://graph.facebook.com/${api_version}/${phone_number_id}/messages`;
+							const response = await this.helpers.httpRequest({
+								method: 'POST',
+								url,
+								headers: {
+									Authorization: `Bearer ${api_token}`,
+									'Content-Type': 'application/json',
+								},
+								body: goodbye_body,
+								json: true,
+							});
+
+							output_data.json.goodbyeSent = true;
+							output_data.json.goodbyeMessageId = (response as {messages?: Array<{id: string}>}).messages?.[0]?.id || null;
+							output_data.json.goodbyeTimestamp = new Date().toISOString();
+						}
+						close_data.push(output_data);
+					} else {
+						continue_data.push(output_data);
+					}
+
+					continue;
+				}
+
+				const credentials = await this.getCredentials('whatsAppBusinessApi');
+				const phone_number_id = credentials.phoneNumberId as string;
+				const api_token = credentials.accessToken as string;
+				const api_version = (credentials.version_api as string) || 'v22.0';
+
+				if (!phone_number_id || !api_token) {
 					throw new NodeOperationError(
 						this.getNode(),
 						'Credenciales no configuradas',
 					);
 				}
 
-				let recipientPhone = this.getNodeParameter('recive_phone_number', i) as string;
-				const messageType = this.getNodeParameter('message_type', i) as string;
-				const sendPresenceCheck = this.getNodeParameter('send_presence_check', i) as boolean;
-				const tries = this.getNodeParameter('tries', i) as number;
-				const messageWaitTime = this.getNodeParameter('message_wait_time', i) as number;
+				let recipient_phone = this.getNodeParameter('recive_phone_number', i, '') as string;
+				const message_type = this.getNodeParameter('message_type', i, 'text') as string;
+				const send_presence_check = this.getNodeParameter('send_presence_check', i, false) as boolean;
+				const tries = this.getNodeParameter('tries', i, 3) as number;
+				const message_wait_time = this.getNodeParameter('message_wait_time', i, 2) as number;
 
-				recipientPhone = recipientPhone.replace(/[\s-]/g, '');
-				if (!recipientPhone.startsWith('+')) {
+				if (!recipient_phone) {
 					throw new NodeOperationError(
 						this.getNode(),
-						'El número debe incluir el código de país con +',
-					);
-				}
-				if (!/^\+\d{10,15}$/.test(recipientPhone)) {
-					throw new NodeOperationError(
-						this.getNode(),
-						'Formato de teléfono inválido',
+						'Recipient Phone Number es requerido',
 					);
 				}
 
-				const sendMessage = async (body: Record<string, unknown>): Promise<Record<string, unknown>> => {
+				recipient_phone = recipient_phone.replace(/[\s-]/g, '');
+				if (!recipient_phone.startsWith('+')) {
+					throw new NodeOperationError(
+						this.getNode(),
+						'El numero debe incluir el codigo de pais con +',
+					);
+				}
+				if (!/^\+\d{10,15}$/.test(recipient_phone)) {
+					throw new NodeOperationError(
+						this.getNode(),
+						'Formato de telefono invalido',
+					);
+				}
+
+				const SendMessage = async (body: Record<string, unknown>): Promise<Record<string, unknown>> => {
 					let attempt = 0;
-					let lastError: Error | null = null;
+					let last_error: Error | null = null;
 
 					while (attempt < tries) {
 						attempt++;
 						try {
-							const url = `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`;
+							const url = `https://graph.facebook.com/${api_version}/${phone_number_id}/messages`;
 							const response = await this.helpers.httpRequest({
 								method: 'POST',
 								url,
 								headers: {
-									Authorization: `Bearer ${apiToken}`,
+									Authorization: `Bearer ${api_token}`,
 									'Content-Type': 'application/json',
 								},
 								body,
 								json: true,
 							});
 							return response as Record<string, unknown>;
-						} catch (error: any) {
-							lastError = error as Error;
+						} catch (error: unknown) {
+							last_error = error as Error;
 							
-							if (error.response?.data) {
+							const err = error as {response?: {data?: unknown}};
+							if (err.response?.data) {
 								throw new NodeOperationError(
 									this.getNode(),
-									`WhatsApp API Error: ${JSON.stringify(error.response.data)}`,
+									`WhatsApp API Error: ${JSON.stringify(err.response.data)}`,
 								);
 							}
 							
 							if (attempt < tries) {
-								await sleep(messageWaitTime * 1000);
+								await sleep(message_wait_time * 1000);
 							}
 						}
 					}
-					throw lastError || new NodeOperationError(this.getNode(), 'No se pudo enviar el mensaje');
+					throw last_error || new NodeOperationError(this.getNode(), 'No se pudo enviar el mensaje');
 				};
 
-				const sentMessages: Array<{
+				const ProcessImageSource = async (
+					sourceType: string,
+					urlParam: string | undefined,
+					base64Data: string | undefined
+				): Promise<{link?: string; id?: string}> => {
+					if (sourceType === 'url') {
+						if (!urlParam || !urlParam.trim().startsWith('http')) {
+							throw new NodeOperationError(this.getNode(), 'Image URL invalida o vacia. Debe comenzar con http:// o https://');
+						}
+						return { link: urlParam.trim() };
+					} else if (sourceType === 'base64') {
+						if (!base64Data || !base64Data.trim()) {
+							throw new NodeOperationError(this.getNode(), 'Base64 data vacio');
+						}
+						
+						let cleanBase64 = base64Data.trim();
+						let mimeType = 'image/jpeg';
+						
+						if (cleanBase64.startsWith('data:')) {
+							const matches = cleanBase64.match(/^data:([^;]+);base64,(.+)$/);
+							if (matches) {
+								mimeType = matches[1];
+								cleanBase64 = matches[2];
+							}
+						}
+
+						const FormData = require('form-data');
+						const buffer = Buffer.from(cleanBase64, 'base64');
+						const extension = mimeType.split('/')[1] || 'jpg';
+						const fileName = `image.${extension}`;
+						
+						const formData = new FormData();
+						formData.append('messaging_product', 'whatsapp');
+						formData.append('file', buffer, {
+							filename: fileName,
+							contentType: mimeType,
+						});
+
+						const uploadUrl = `https://graph.facebook.com/${api_version}/${phone_number_id}/media`;
+						const uploadResponse = await this.helpers.httpRequest({
+							method: 'POST',
+							url: uploadUrl,
+							headers: {
+								Authorization: `Bearer ${api_token}`,
+								...formData.getHeaders(),
+							},
+							body: formData,
+						});
+
+						return { id: (uploadResponse as {id: string}).id };
+					}
+					throw new NodeOperationError(this.getNode(), 'Tipo de imagen source invalido');
+				};
+
+				const sent_messages: Array<{
 					message: string;
 					messageId: string | null;
 					timestamp: string;
 					type: string;
 				}> = [];
 
-				let mainMessageBody: Record<string, unknown>;
-				let mainMessageText: string;
+				let main_message_body: Record<string, unknown>;
+				let main_message_text: string;
 
-				if (messageType === 'buttons') {
-					const buttonsBody = this.getNodeParameter('buttons_body', i) as string;
-					const buttonsHeaderType = this.getNodeParameter('buttons_header_type', i, 'none') as string;
-					const buttonsFooter = this.getNodeParameter('buttons_footer', i, '') as string;
-					const buttonsRaw = this.getNodeParameter('buttons_options', i) as string;
+				if (message_type === 'buttons') {
+					const buttons_body = this.getNodeParameter('buttons_body', i, '') as string;
+					const buttons_header_type = this.getNodeParameter('buttons_header_type', i, 'none') as string;
+					const buttons_footer = this.getNodeParameter('buttons_footer', i, '') as string;
+					const buttons_raw = this.getNodeParameter('buttons_options', i, '') as string;
 
-					if (!buttonsBody.trim()) {
+					if (!buttons_body.trim()) {
 						throw new NodeOperationError(this.getNode(), 'Body es requerido');
 					}
 
-					const buttonLines = buttonsRaw.split('\n').filter(line => line.trim());
+					const button_lines = buttons_raw.split('\n').filter(line => line.trim());
 					
-					if (buttonLines.length === 0) {
-						throw new NodeOperationError(this.getNode(), 'Debes agregar al menos un botón');
+					if (button_lines.length === 0) {
+						throw new NodeOperationError(this.getNode(), 'Debes agregar al menos un boton');
 					}
 
-					if (buttonLines.length > 3) {
-						throw new NodeOperationError(this.getNode(), `Máximo 3 botones. Tienes ${buttonLines.length}`);
+					if (button_lines.length > 3) {
+						throw new NodeOperationError(this.getNode(), `Maximo 3 botones. Tienes ${button_lines.length}`);
 					}
 
-					const buttons = buttonLines.map((line, index) => {
+					const button_data = button_lines.map((line, index) => {
 						const parts = line.split('|').map(p => p.trim());
 						
 						if (parts.length < 2) {
 							throw new NodeOperationError(
 								this.getNode(),
-								`Línea ${index + 1}: Formato inválido. Usa: Button Text|button_id`,
+								`Linea ${index + 1}: Formato invalido. Usa: Button Text|button_id|close`,
 							);
 						}
 
 						if (parts[0].length > 20) {
 							throw new NodeOperationError(
 								this.getNode(),
-								`Botón ${index + 1}: El texto no puede exceder 20 caracteres`,
+								`Boton ${index + 1}: El texto no puede exceder 20 caracteres`,
 							);
 						}
 
@@ -500,74 +979,84 @@ export class WhatsappMessage implements INodeType {
 
 					const interactive: Record<string, unknown> = {
 						type: 'button',
-						body: { text: buttonsBody.trim() },
-						action: { buttons },
+						body: { text: buttons_body.trim() },
+						action: { buttons: button_data },
 					};
 
-					if (buttonsHeaderType && buttonsHeaderType !== 'none') {
-						if (buttonsHeaderType === 'text') {
-							const buttonsHeaderText = this.getNodeParameter('buttons_header_text', i, '') as string;
-							if (buttonsHeaderText && buttonsHeaderText.trim().length > 0) {
-								interactive.header = {
-									type: 'text',
-									text: buttonsHeaderText.trim(),
-								};
-							}
-						} else if (buttonsHeaderType === 'image') {
-							const buttonsHeaderImageUrl = this.getNodeParameter('buttons_header_image_url', i, '') as string;
-							if (buttonsHeaderImageUrl && buttonsHeaderImageUrl.trim().length > 0) {
-								interactive.header = {
-									type: 'image',
-									image: {
-										link: buttonsHeaderImageUrl.trim(),
-									},
-								};
-							}
+					if (buttons_header_type === 'image') {
+						const buttons_header_image_source = this.getNodeParameter('buttons_header_image_source', i, 'url') as string;
+						const buttons_header_image_url = this.getNodeParameter('buttons_header_image_url', i, '') as string;
+						const buttons_header_image_base64 = this.getNodeParameter('buttons_header_image_base64', i, '') as string;
+
+						const imageData = await ProcessImageSource(
+							buttons_header_image_source,
+							buttons_header_image_url,
+							buttons_header_image_base64
+						);
+						
+						if (imageData.link) {
+							interactive.header = {
+								type: 'image',
+								image: { link: imageData.link },
+							};
+						} else if (imageData.id) {
+							interactive.header = {
+								type: 'image',
+								image: { id: imageData.id },
+							};
+						}
+					} else if (buttons_header_type === 'text') {
+						const buttons_header_text = this.getNodeParameter('buttons_header_text', i, '') as string;
+						if (buttons_header_text && buttons_header_text.trim().length > 0) {
+							interactive.header = {
+								type: 'text',
+								text: buttons_header_text.trim(),
+							};
 						}
 					}
 
-					if (buttonsFooter.trim()) {
-						interactive.footer = { text: buttonsFooter.trim() };
+					if (buttons_footer.trim()) {
+						interactive.footer = { text: buttons_footer.trim() };
 					}
 
-					mainMessageBody = {
+					main_message_body = {
 						messaging_product: 'whatsapp',
 						recipient_type: 'individual',
-						to: recipientPhone,
+						to: recipient_phone,
 						type: 'interactive',
 						interactive,
 					};
 
-					mainMessageText = `Buttons: ${buttonsBody}`;
+					main_message_text = `Buttons: ${buttons_body}`;
 
-				} else if (messageType === 'list') {
-					const listBody = this.getNodeParameter('list_body', i) as string;
-					const listButton = this.getNodeParameter('list_button', i) as string;
-					const listHeaderType = this.getNodeParameter('list_header_type', i, 'none') as string;
-					const listFooter = this.getNodeParameter('list_footer', i, '') as string;
-					const optionsRaw = this.getNodeParameter('list_options_simple', i) as string;
+				} else if (message_type === 'list') {
+					const list_body = this.getNodeParameter('list_body', i, '') as string;
+					const list_button = this.getNodeParameter('list_button', i, '') as string;
+					const list_header_type = this.getNodeParameter('list_header_type', i, 'none') as string;
+					const list_footer = this.getNodeParameter('list_footer', i, '') as string;
+					const options_raw = this.getNodeParameter('list_options_simple', i, '') as string;
 
-					if (!listBody.trim() || !listButton.trim()) {
+					if (!list_body.trim() || !list_button.trim()) {
 						throw new NodeOperationError(this.getNode(), 'Body y Button son requeridos');
 					}
 
-					const optionLines = optionsRaw.split('\n').filter(line => line.trim());
+					const option_lines = options_raw.split('\n').filter(line => line.trim());
 					
-					if (optionLines.length === 0) {
-						throw new NodeOperationError(this.getNode(), 'Debes agregar al menos una opción');
+					if (option_lines.length === 0) {
+						throw new NodeOperationError(this.getNode(), 'Debes agregar al menos una opcion');
 					}
 
-					if (optionLines.length > 10) {
-						throw new NodeOperationError(this.getNode(), `Máximo 10 opciones. Tienes ${optionLines.length}`);
+					if (option_lines.length > 10) {
+						throw new NodeOperationError(this.getNode(), `Maximo 10 opciones. Tienes ${option_lines.length}`);
 					}
 
-					const rows = optionLines.map((line, index) => {
+					const row_data = option_lines.map((line, index) => {
 						const parts = line.split('|').map(p => p.trim());
 						
 						if (parts.length < 2) {
 							throw new NodeOperationError(
 								this.getNode(),
-								`Línea ${index + 1}: Formato inválido. Usa: Title|id|description`,
+								`Linea ${index + 1}: Formato invalido. Usa: Title|id|description|close`,
 							);
 						}
 
@@ -576,7 +1065,7 @@ export class WhatsappMessage implements INodeType {
 							title: parts[0],
 						};
 
-						if (parts[2]) {
+						if (parts[2] && parts[2] !== 'true' && parts[2] !== '1') {
 							row.description = parts[2];
 						}
 
@@ -585,168 +1074,320 @@ export class WhatsappMessage implements INodeType {
 
 					const interactive: Record<string, unknown> = {
 						type: 'list',
-						body: { text: listBody.trim() },
+						body: { text: list_body.trim() },
 						action: {
-							button: listButton.trim(),
-							sections: [{ rows }],
+							button: list_button.trim(),
+							sections: [{ rows: row_data }],
 						},
 					};
 
-					if (listHeaderType && listHeaderType !== 'none') {
-						if (listHeaderType === 'text') {
-							const listHeaderText = this.getNodeParameter('list_header_text', i, '') as string;
-							if (listHeaderText && listHeaderText.trim().length > 0) {
-								interactive.header = {
-									type: 'text',
-									text: listHeaderText.trim(),
-								};
-							}
-						} else if (listHeaderType === 'image') {
-							const listHeaderImageUrl = this.getNodeParameter('list_header_image_url', i, '') as string;
-							if (listHeaderImageUrl && listHeaderImageUrl.trim().length > 0) {
-								interactive.header = {
-									type: 'image',
-									image: {
-										link: listHeaderImageUrl.trim(),
-									},
-								};
-							}
+					if (list_header_type === 'image') {
+						const list_header_image_source = this.getNodeParameter('list_header_image_source', i, 'url') as string;
+						const list_header_image_url = this.getNodeParameter('list_header_image_url', i, '') as string;
+						const list_header_image_base64 = this.getNodeParameter('list_header_image_base64', i, '') as string;
+
+						const imageData = await ProcessImageSource(
+							list_header_image_source,
+							list_header_image_url,
+							list_header_image_base64
+						);
+
+						if (imageData.link) {
+							interactive.header = {
+								type: 'image',
+								image: { link: imageData.link },
+							};
+						} else if (imageData.id) {
+							interactive.header = {
+								type: 'image',
+								image: { id: imageData.id },
+							};
+						}
+					} else if (list_header_type === 'text') {
+						const list_header_text = this.getNodeParameter('list_header_text', i, '') as string;
+						if (list_header_text && list_header_text.trim().length > 0) {
+							interactive.header = {
+								type: 'text',
+								text: list_header_text.trim(),
+							};
 						}
 					}
 
-					if (listFooter.trim()) {
-						interactive.footer = { text: listFooter.trim() };
+					if (list_footer.trim()) {
+						interactive.footer = { text: list_footer.trim() };
 					}
 
-					mainMessageBody = {
+					main_message_body = {
 						messaging_product: 'whatsapp',
 						recipient_type: 'individual',
-						to: recipientPhone,
+						to: recipient_phone,
 						type: 'interactive',
 						interactive,
 					};
 
-					mainMessageText = `Lista: ${listBody}`;
+					main_message_text = `Lista: ${list_body}`;
 
-				} else {
-					const mainMessage = this.getNodeParameter('main_message', i) as string;
+				} else if (message_type === 'cta') {
+					const cta_body = this.getNodeParameter('cta_body', i, '') as string;
+					const cta_header_type = this.getNodeParameter('cta_header_type', i, 'none') as string;
+					const cta_footer = this.getNodeParameter('cta_footer', i, '') as string;
+					const cta_buttons_raw = this.getNodeParameter('cta_buttons', i, '') as string;
 
-					if (!mainMessage.trim()) {
-						throw new NodeOperationError(this.getNode(), 'El mensaje no puede estar vacío');
+					if (!cta_body.trim()) {
+						throw new NodeOperationError(this.getNode(), 'Body es requerido');
 					}
 
-					mainMessageBody = {
-						messaging_product: 'whatsapp',
-						to: recipientPhone,
-						type: 'text',
-						text: { body: mainMessage.trim() },
+					const cta_button_lines = cta_buttons_raw.split('\n').filter(line => line.trim());
+					
+					if (cta_button_lines.length === 0) {
+						throw new NodeOperationError(this.getNode(), 'Debes agregar al menos un boton');
+					}
+
+					if (cta_button_lines.length > 1) {
+						throw new NodeOperationError(this.getNode(), `Solo se soporta 1 boton CTA. Tienes ${cta_button_lines.length}`);
+					}
+
+					const parts = cta_button_lines[0].split('|').map(p => p.trim());
+					
+					if (parts.length < 3) {
+						throw new NodeOperationError(
+							this.getNode(),
+							'Formato invalido. Usa: Button Text|url|https://example.com',
+						);
+					}
+
+					const button_type = parts[1].toLowerCase();
+					
+					if (button_type !== 'url') {
+						throw new NodeOperationError(
+							this.getNode(),
+							`El tipo debe ser 'url', no '${parts[1]}'`,
+						);
+					}
+
+					if (parts[0].length > 20) {
+						throw new NodeOperationError(
+							this.getNode(),
+							'El texto del boton no puede exceder 20 caracteres',
+						);
+					}
+
+					if (!parts[2].startsWith('http')) {
+						throw new NodeOperationError(
+							this.getNode(),
+							'La URL debe comenzar con http:// o https://',
+						);
+					}
+
+					const interactive: Record<string, unknown> = {
+						type: 'cta_url',
+						body: { text: cta_body.trim() },
+						action: {
+							name: 'cta_url',
+							parameters: {
+								display_text: parts[0],
+								url: parts[2],
+							},
+						},
 					};
 
-					mainMessageText = mainMessage.trim();
+					if (cta_header_type === 'image') {
+						const cta_header_image_source = this.getNodeParameter('cta_header_image_source', i, 'url') as string;
+						const cta_header_image_url = this.getNodeParameter('cta_header_image_url', i, '') as string;
+						const cta_header_image_base64 = this.getNodeParameter('cta_header_image_base64', i, '') as string;
+
+						const imageData = await ProcessImageSource(
+							cta_header_image_source,
+							cta_header_image_url,
+							cta_header_image_base64
+						);
+						
+						if (imageData.link) {
+							interactive.header = {
+								type: 'image',
+								image: { link: imageData.link },
+							};
+						} else if (imageData.id) {
+							interactive.header = {
+								type: 'image',
+								image: { id: imageData.id },
+							};
+						}
+					} else if (cta_header_type === 'text') {
+						const cta_header_text = this.getNodeParameter('cta_header_text', i, '') as string;
+						if (cta_header_text && cta_header_text.trim().length > 0) {
+							interactive.header = {
+								type: 'text',
+								text: cta_header_text.trim(),
+							};
+						}
+					}
+
+					if (cta_footer.trim()) {
+						interactive.footer = { text: cta_footer.trim() };
+					}
+
+					main_message_body = {
+						messaging_product: 'whatsapp',
+						recipient_type: 'individual',
+						to: recipient_phone,
+						type: 'interactive',
+						interactive,
+					};
+
+					main_message_text = `CTA: ${cta_body}`;
+
+				} else {
+					const main_message = this.getNodeParameter('main_message', i, '') as string;
+					const text_include_image = this.getNodeParameter('text_include_image', i, false) as boolean;
+
+					if (text_include_image) {
+						const text_image_source = this.getNodeParameter('text_image_source', i, 'url') as string;
+						const text_image_url = this.getNodeParameter('text_image_url', i, '') as string;
+						const text_image_base64 = this.getNodeParameter('text_image_base64', i, '') as string;
+						const text_image_caption = this.getNodeParameter('text_image_caption', i, '') as string;
+
+						const imageData = await ProcessImageSource(
+							text_image_source,
+							text_image_url,
+							text_image_base64
+						);
+
+						const imageObject: Record<string, string> = {};
+						if (imageData.link) {
+							imageObject.link = imageData.link;
+						} else if (imageData.id) {
+							imageObject.id = imageData.id;
+						}
+
+						const captionText = text_image_caption.trim() || main_message.trim();
+						if (captionText) {
+							imageObject.caption = captionText;
+						}
+
+						main_message_body = {
+							messaging_product: 'whatsapp',
+							to: recipient_phone,
+							type: 'image',
+							image: imageObject,
+						};
+
+						main_message_text = `Image: ${captionText}`;
+					} else {
+						if (!main_message.trim()) {
+							throw new NodeOperationError(this.getNode(), 'El mensaje no puede estar vacio');
+						}
+
+						main_message_body = {
+							messaging_product: 'whatsapp',
+							to: recipient_phone,
+							type: 'text',
+							text: { body: main_message.trim() },
+						};
+
+						main_message_text = main_message.trim();
+					}
 				}
 
-				console.log('=== MESSAGE BODY ===');
-				console.log(JSON.stringify(mainMessageBody, null, 2));
-				console.log('===================');
-
-				const mainResponse = await sendMessage(mainMessageBody);
+				const mainResponse = await SendMessage(main_message_body);
 				const messages = mainResponse.messages as Array<{id: string}> | undefined;
-				sentMessages.push({
-					message: mainMessageText,
+				sent_messages.push({
+					message: main_message_text,
 					messageId: messages?.[0]?.id || null,
 					timestamp: new Date().toISOString(),
 					type: 'main',
 				});
 
-				if (sendPresenceCheck) {
-					const waitTimeCheck = this.getNodeParameter('wait_time_check', i) as number;
-					const messageInterval = this.getNodeParameter('message_interval', i) as number;
-					const checkMessagesRaw = this.getNodeParameter('check_message', i) as string;
-					const maxAutoMessages = this.getNodeParameter('max_auto_messages', i) as number;
+				if (send_presence_check) {
+					const wait_time_check = this.getNodeParameter('wait_time_check', i, 30) as number;
+					const message_interval = this.getNodeParameter('message_interval', i, 30) as number;
+					const check_messages_raw = this.getNodeParameter('check_message', i, '') as string;
+					const max_auto_messages = this.getNodeParameter('max_auto_messages', i, 5) as number;
 
-					const checkMessages = checkMessagesRaw
+					const check_messages = check_messages_raw
 						.split('\n')
 						.map(msg => msg.trim())
 						.filter(msg => msg.length > 0);
 
-					if (checkMessages.length === 0) {
-						throw new NodeOperationError(this.getNode(), 'Los mensajes de espera no pueden estar vacíos');
+					if (check_messages.length === 0) {
+						throw new NodeOperationError(this.getNode(), 'Los mensajes de espera no pueden estar vacios');
 					}
 
-					await sleep(waitTimeCheck * 1000);
+					await sleep(wait_time_check * 1000);
 
 					let messageIndex = 0;
-					let messagesSent = 0;
+					let messages_sent = 0;
 
-					const firstMessage = checkMessages[messageIndex % checkMessages.length];
+					const firstMessage = check_messages[messageIndex % check_messages.length];
 					messageIndex++;
-					messagesSent++;
+					messages_sent++;
 
-					const firstAutoBody = {
+					const first_auto_body = {
 						messaging_product: 'whatsapp',
-						to: recipientPhone,
+						to: recipient_phone,
 						type: 'text',
 						text: { body: firstMessage },
 					};
 
-					const firstResponse = await sendMessage(firstAutoBody);
-					const firstMessages = firstResponse.messages as Array<{id: string}> | undefined;
-					sentMessages.push({
+					const firstResponse = await SendMessage(first_auto_body);
+					const first_messages = firstResponse.messages as Array<{id: string}> | undefined;
+					sent_messages.push({
 						message: firstMessage,
-						messageId: firstMessages?.[0]?.id || null,
+						messageId: first_messages?.[0]?.id || null,
 						timestamp: new Date().toISOString(),
 						type: 'presence_check',
 					});
 
 					void (async () => {
-						while (messagesSent < maxAutoMessages) {
-							await sleep(messageInterval * 1000);
+						while (messages_sent < max_auto_messages) {
+							await sleep(message_interval * 1000);
 							
-							if (messagesSent >= maxAutoMessages) {
+							if (messages_sent >= max_auto_messages) {
 								break;
 							}
 
-							const currentMessage = checkMessages[messageIndex % checkMessages.length];
+							const currentMessage = check_messages[messageIndex % check_messages.length];
 							messageIndex++;
-							messagesSent++;
+							messages_sent++;
 
-							const autoBody = {
+							const auto_body = {
 								messaging_product: 'whatsapp',
-								to: recipientPhone,
+								to: recipient_phone,
 								type: 'text',
 								text: { body: currentMessage },
 							};
 
 							try {
-								const response = await sendMessage(autoBody);
-								const responseMessages = response.messages as Array<{id: string}> | undefined;
-								sentMessages.push({
+								const response = await SendMessage(auto_body);
+								const response_messages = response.messages as Array<{id: string}> | undefined;
+								sent_messages.push({
 									message: currentMessage,
-									messageId: responseMessages?.[0]?.id || null,
+									messageId: response_messages?.[0]?.id || null,
 									timestamp: new Date().toISOString(),
 									type: 'presence_check',
 								});
 							} catch {
+								// Silently catch errors in background task
 							}
 						}
 					})();
 				}
 
-				returnData.push({
+				continue_data.push({
 					json: {
 						success: true,
-						recipient: recipientPhone,
-						messageType,
-						totalMessagesSent: sentMessages.length,
-						presenceCheckSent: sendPresenceCheck,
-						messages: sentMessages,
+						recipient: recipient_phone,
+						messageType: message_type,
+						totalMessagesSent: sent_messages.length,
+						presenceCheckSent: send_presence_check,
+						messages: sent_messages,
 						timestamp: new Date().toISOString(),
 					},
 				});
 
 			} catch (error) {
 				if (this.continueOnFail()) {
-					returnData.push({
+					continue_data.push({
 						json: {
 							error: (error as Error).message || 'Error desconocido',
 							success: false,
@@ -759,6 +1400,6 @@ export class WhatsappMessage implements INodeType {
 			}
 		}
 
-		return [returnData];
+		return [continue_data, close_data];
 	}
 }
