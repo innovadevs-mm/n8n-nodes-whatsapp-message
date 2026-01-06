@@ -194,6 +194,7 @@ export class WhatsappMessage implements INodeType {
 					},
 				],
 				default: 'none',
+				description: 'Tipo de header. NOTA: Las imagenes en listas se envian como mensaje separado primero (workaround de WhatsApp API)',
 				displayOptions: {
 					show: {
 						message_type: ['list'],
@@ -244,7 +245,8 @@ export class WhatsappMessage implements INodeType {
 					rows: 6,
 				},
 				default: 'Pizza|pizza_id|Delicious pizza\nPasta|pasta_id|Fresh pasta\nSalir|exit_id|Terminar conversacion|true',
-				placeholder: 'Title|ID|description|close',
+				placeholder: 'Titulo|ID|descripcion|close',
+				description: 'Una opcion por linea. Formato: Titulo|ID|descripcion|close. La descripcion es opcional. Agregar |true al final marca la opcion como cierre. Maximo 10 opciones.',
 				displayOptions: {
 					show: {
 						message_type: ['list'],
@@ -334,7 +336,8 @@ export class WhatsappMessage implements INodeType {
 					rows: 4,
 				},
 				default: 'Si me interesa|yes_button\nNo gracias|no_button|true\nMas informacion|info_button',
-				placeholder: 'Button Text|button_id|close',
+				placeholder: 'Texto del boton|button_id|close',
+				description: 'Un boton por linea. Formato: Texto del boton|button_id|close. Agregar |true al final marca el boton como cierre. Maximo 3 botones. El texto debe tener maximo 20 caracteres.',
 				displayOptions: {
 					show: {
 						message_type: ['buttons'],
@@ -424,7 +427,8 @@ export class WhatsappMessage implements INodeType {
 					rows: 4,
 				},
 				default: 'Visit Website|url|https://example.com',
-				placeholder: 'Button Text|url|https://example.com',
+				placeholder: 'Ver sitio|url|https://ejemplo.com',
+				description: 'Formato: Texto del boton|url|URL completa. El texto debe tener maximo 20 caracteres. Solo se permite 1 boton CTA.',
 				displayOptions: {
 					show: {
 						message_type: ['cta'],
@@ -777,23 +781,26 @@ export class WhatsappMessage implements INodeType {
 
 					if (buttons_header_type === 'image') {
 						const buttons_header_image_url = this.getNodeParameter('buttons_header_image_url', i, '') as string;
-						const validatedUrl = ValidateImageUrl(buttons_header_image_url);
-						
-						interactive.header = {
-							type: 'image',
-							image: { link: validatedUrl },
-						};
+						if (buttons_header_image_url && buttons_header_image_url.trim() && buttons_header_image_url.trim().startsWith('http')) {
+							const validatedUrl = ValidateImageUrl(buttons_header_image_url);
+							interactive.header = {
+								type: 'image',
+								image: { link: validatedUrl },
+							};
+						}
 					} else if (buttons_header_type === 'text') {
 						const buttons_header_text = this.getNodeParameter('buttons_header_text', i, '') as string;
-						if (buttons_header_text && buttons_header_text.trim().length > 0) {
+						const trimmedText = buttons_header_text ? buttons_header_text.trim() : '';
+						
+						if (trimmedText && trimmedText.length > 0) {
 							interactive.header = {
 								type: 'text',
-								text: buttons_header_text.trim(),
+								text: trimmedText,
 							};
 						}
 					}
 
-					if (buttons_footer.trim()) {
+					if (buttons_footer && buttons_footer.trim()) {
 						interactive.footer = { text: buttons_footer.trim() };
 					}
 
@@ -850,6 +857,35 @@ export class WhatsappMessage implements INodeType {
 						return row;
 					});
 
+					let list_image_url_for_separate_message = '';
+
+					if (list_header_type === 'image') {
+						const list_header_image_url = this.getNodeParameter('list_header_image_url', i, '') as string;
+						if (list_header_image_url && list_header_image_url.trim() && list_header_image_url.trim().startsWith('http')) {
+							list_image_url_for_separate_message = ValidateImageUrl(list_header_image_url);
+						}
+					}
+
+					if (list_image_url_for_separate_message) {
+						const imageMessageBody = {
+							messaging_product: 'whatsapp',
+							to: recipient_phone,
+							type: 'image',
+							image: { link: list_image_url_for_separate_message },
+						};
+
+						const imageResponse = await SendMessage(imageMessageBody);
+						const image_messages = imageResponse.messages as Array<{id: string}> | undefined;
+						sent_messages.push({
+							message: 'Imagen de lista',
+							messageId: image_messages?.[0]?.id || null,
+							timestamp: new Date().toISOString(),
+							type: 'list_image',
+						});
+
+						await sleep(300);
+					}
+
 					const interactive: Record<string, unknown> = {
 						type: 'list',
 						body: { text: list_body.trim() },
@@ -859,25 +895,19 @@ export class WhatsappMessage implements INodeType {
 						},
 					};
 
-					if (list_header_type === 'image') {
-						const list_header_image_url = this.getNodeParameter('list_header_image_url', i, '') as string;
-						const validatedUrl = ValidateImageUrl(list_header_image_url);
-
-						interactive.header = {
-							type: 'image',
-							image: { link: validatedUrl },
-						};
-					} else if (list_header_type === 'text') {
+					if (list_header_type === 'text') {
 						const list_header_text = this.getNodeParameter('list_header_text', i, '') as string;
-						if (list_header_text && list_header_text.trim().length > 0) {
+						const trimmedText = list_header_text ? list_header_text.trim() : '';
+						
+						if (trimmedText && trimmedText.length > 0) {
 							interactive.header = {
 								type: 'text',
-								text: list_header_text.trim(),
+								text: trimmedText,
 							};
 						}
 					}
 
-					if (list_footer.trim()) {
+					if (list_footer && list_footer.trim()) {
 						interactive.footer = { text: list_footer.trim() };
 					}
 
@@ -886,7 +916,7 @@ export class WhatsappMessage implements INodeType {
 						recipient_type: 'individual',
 						to: recipient_phone,
 						type: 'interactive',
-						interactive,
+						interactive: interactive,
 					};
 
 					main_message_text = `Lista: ${list_body}`;
@@ -914,9 +944,13 @@ export class WhatsappMessage implements INodeType {
 					const parts = cta_button_lines[0].split('|').map(p => p.trim());
 					
 					if (parts.length < 3) {
+						const ejemplo = 'Ver sitio|url|https://ejemplo.com';
 						throw new NodeOperationError(
 							this.getNode(),
-							'Formato invalido. Usa: Button Text|url|https://example.com',
+							`Formato invalido. Debes incluir 3 partes separadas por |
+Formato: Texto del boton|url|URL completa
+Ejemplo: ${ejemplo}
+Tu entrada tiene solo ${parts.length} parte(s)`,
 						);
 					}
 
@@ -925,21 +959,37 @@ export class WhatsappMessage implements INodeType {
 					if (button_type !== 'url') {
 						throw new NodeOperationError(
 							this.getNode(),
-							`El tipo debe ser 'url', no '${parts[1]}'`,
+							`El segundo campo debe ser 'url', encontrado: '${parts[1]}'
+Formato correcto: Texto del boton|url|https://ejemplo.com`,
+						);
+					}
+
+					if (parts[0].length === 0) {
+						throw new NodeOperationError(
+							this.getNode(),
+							'El texto del boton no puede estar vacio',
 						);
 					}
 
 					if (parts[0].length > 20) {
 						throw new NodeOperationError(
 							this.getNode(),
-							'El texto del boton no puede exceder 20 caracteres',
+							`El texto del boton no puede exceder 20 caracteres. Tiene ${parts[0].length}`,
+						);
+					}
+
+					if (!parts[2] || parts[2].length === 0) {
+						throw new NodeOperationError(
+							this.getNode(),
+							'La URL no puede estar vacia',
 						);
 					}
 
 					if (!parts[2].startsWith('http')) {
 						throw new NodeOperationError(
 							this.getNode(),
-							'La URL debe comenzar con http:// o https://',
+							`La URL debe comenzar con http:// o https://
+URL recibida: ${parts[2]}`,
 						);
 					}
 
@@ -957,23 +1007,26 @@ export class WhatsappMessage implements INodeType {
 
 					if (cta_header_type === 'image') {
 						const cta_header_image_url = this.getNodeParameter('cta_header_image_url', i, '') as string;
-						const validatedUrl = ValidateImageUrl(cta_header_image_url);
-						
-						interactive.header = {
-							type: 'image',
-							image: { link: validatedUrl },
-						};
+						if (cta_header_image_url && cta_header_image_url.trim() && cta_header_image_url.trim().startsWith('http')) {
+							const validatedUrl = ValidateImageUrl(cta_header_image_url);
+							interactive.header = {
+								type: 'image',
+								image: { link: validatedUrl },
+							};
+						}
 					} else if (cta_header_type === 'text') {
 						const cta_header_text = this.getNodeParameter('cta_header_text', i, '') as string;
-						if (cta_header_text && cta_header_text.trim().length > 0) {
+						const trimmedText = cta_header_text ? cta_header_text.trim() : '';
+						
+						if (trimmedText && trimmedText.length > 0) {
 							interactive.header = {
 								type: 'text',
-								text: cta_header_text.trim(),
+								text: trimmedText,
 							};
 						}
 					}
 
-					if (cta_footer.trim()) {
+					if (cta_footer && cta_footer.trim()) {
 						interactive.footer = { text: cta_footer.trim() };
 					}
 

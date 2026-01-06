@@ -70,6 +70,8 @@ Caption: "20% de descuento en pan integral"
 ### 2. Lista interactiva
 
 Crea menús con hasta 10 opciones que incluyen título, ID y descripción opcional.
+**Nota importante sobre imágenes en listas:**
+Debido a una limitación de la API de WhatsApp, cuando usas "Header Type: Image" en listas, la imagen se envía como un mensaje separado (0.3 segundos antes de la lista). Esto es automático y transparente - el usuario verá la imagen seguida inmediatamente de la lista. Este comportamiento solo ocurre en listas; los botones y CTA envían imágenes directamente en el header sin problema.
 
 **Parámetros:**
 - **Body Text**: Texto principal del mensaje
@@ -404,6 +406,7 @@ Si el primer intento falla, esperará 5 segundos e intentará nuevamente, hasta 
 - Los títulos de botones no pueden exceder 20 caracteres
 - Los headers de imagen deben ser URLs públicas
 - No se puede enviar Base64 directamente (solo URLs)
+-Las imágenes en headers de listas se envían como mensaje separado (workaround automático para bug de WhatsApp API)
 
 ## Desarrollo
 
