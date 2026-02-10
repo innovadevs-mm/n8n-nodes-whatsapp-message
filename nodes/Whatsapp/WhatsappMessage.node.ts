@@ -6,7 +6,6 @@ import {
 	NodeOperationError,
 	sleep,
 } from 'n8n-workflow';
-
 export class WhatsappMessage implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'WhatsApp Message',
@@ -70,8 +69,8 @@ export class WhatsappMessage implements INodeType {
 				name: 'recive_phone_number',
 				type: 'string',
 				default: '',
-				placeholder: '+573001234567',
-				description: 'Número de teléfono del destinatario con código de país',
+				placeholder: '573001234567 o +573001234567',
+				description: 'Número de teléfono del destinatario. El + es opcional, se agregará automáticamente si falta. Formato: [código país][número] Ej: 573001234567, +573001234567',
 			},
 			{
 				displayName: 'Message Type',
@@ -169,6 +168,7 @@ export class WhatsappMessage implements INodeType {
 				name: 'list_button',
 				type: 'string',
 				default: 'Ver opciones',
+				description: 'Texto del botón de la lista (máximo 20 caracteres recomendado por WhatsApp)',
 				displayOptions: {
 					show: {
 						message_type: ['list'],
@@ -598,12 +598,17 @@ export class WhatsappMessage implements INodeType {
 
 					if (is_close_action) {
 						const goodbye_message = this.getNodeParameter('goodbye_message', i, '') as string;
+
+
+
 						if (goodbye_message.trim()) {
 							const goodbye_body = {
 								messaging_product: 'whatsapp',
 								to: recipient_phone,
 								type: 'text',
-								text: { body: goodbye_message.trim() },
+								text: { 
+									body: goodbye_message.trim() 
+								},
 							};
 
 							const url = `https://graph.facebook.com/${api_version}/${phone_number_id}/messages`;
@@ -655,17 +660,19 @@ export class WhatsappMessage implements INodeType {
 					);
 				}
 
-				recipient_phone = recipient_phone.replace(/[\s-]/g, '');
+				// Limpiar espacios, guiones y paréntesis
+				recipient_phone = recipient_phone.replace(/[\s\-\(\)]/g, '');
+				
+				// Si no empieza con +, agregarlo automáticamente
 				if (!recipient_phone.startsWith('+')) {
-					throw new NodeOperationError(
-						this.getNode(),
-						'El numero debe incluir el codigo de pais con +',
-					);
+					recipient_phone = '+' + recipient_phone;
 				}
+				
+				// Validar que solo contenga + al inicio y números después
 				if (!/^\+\d{10,15}$/.test(recipient_phone)) {
 					throw new NodeOperationError(
 						this.getNode(),
-						'Formato de telefono invalido',
+						`Formato de teléfono inválido: "${recipient_phone}". Debe tener el código de país seguido de 10-15 dígitos. Ejemplos: +573001234567, 573001234567, +1234567890`,
 					);
 				}
 
@@ -760,7 +767,7 @@ export class WhatsappMessage implements INodeType {
 						if (parts[0].length > 20) {
 							throw new NodeOperationError(
 								this.getNode(),
-								`Boton ${index + 1}: El texto no puede exceder 20 caracteres`,
+								`Boton ${index + 1}: El texto no puede exceder 20 caracteres. Tiene ${parts[0].length} caracteres`,
 							);
 						}
 
@@ -823,6 +830,14 @@ export class WhatsappMessage implements INodeType {
 
 					if (!list_body.trim() || !list_button.trim()) {
 						throw new NodeOperationError(this.getNode(), 'Body y Button son requeridos');
+					}
+
+					// VALIDACIÓN AGREGADA: Límite de 20 caracteres para list_button
+					if (list_button.trim().length > 20) {
+						throw new NodeOperationError(
+							this.getNode(),
+							`El texto del botón no puede exceder 20 caracteres. Tiene ${list_button.trim().length} caracteres. Texto actual: "${list_button.trim()}"`,
+						);
 					}
 
 					const option_lines = options_raw.split('\n').filter(line => line.trim());
