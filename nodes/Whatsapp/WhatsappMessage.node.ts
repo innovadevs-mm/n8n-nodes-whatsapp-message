@@ -661,7 +661,7 @@ export class WhatsappMessage implements INodeType {
 				}
 
 				// Limpiar espacios, guiones y paréntesis
-				recipient_phone = recipient_phone.replace(/[\s\-\(\)]/g, '');
+				recipient_phone = recipient_phone.replace(/[\s\-()]/g, '');
 				
 				// Si no empieza con +, agregarlo automáticamente
 				if (!recipient_phone.startsWith('+')) {
