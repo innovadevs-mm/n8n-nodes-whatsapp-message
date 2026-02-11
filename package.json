@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-whatsapp-message",
-	"version": "0.1.7",
+	"version": "0.1.8",
 	"description": "WhatsApp Message node for n8n",
 	"license": "MIT",
 	"homepage": "https://github.com/innovadevs-mm/n8n-nodes-whatsapp-message",
