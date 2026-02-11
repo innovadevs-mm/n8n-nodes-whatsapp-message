@@ -528,6 +528,14 @@ export class WhatsappMessage implements INodeType {
 		const continue_data: INodeExecutionData[] = [];
 		const close_data: INodeExecutionData[] = [];
 
+		// Función helper para parsear saltos de línea y otros escape sequences
+		const parseEscapeSequences = (text: string): string => {
+			return text
+				.replace(/\\n/g, '\n')
+				.replace(/\\r/g, '\r')
+				.replace(/\\t/g, '\t');
+		};
+
 		for (let i = 0; i < items.length; i++) {
 			try {
 				const item = items[i];
@@ -599,15 +607,16 @@ export class WhatsappMessage implements INodeType {
 					if (is_close_action) {
 						const goodbye_message = this.getNodeParameter('goodbye_message', i, '') as string;
 
-
-
 						if (goodbye_message.trim()) {
+							// Parsear saltos de línea en el mensaje de despedida
+							const parsed_goodbye = parseEscapeSequences(goodbye_message.trim());
+
 							const goodbye_body = {
 								messaging_product: 'whatsapp',
 								to: recipient_phone,
 								type: 'text',
 								text: { 
-									body: goodbye_message.trim() 
+									body: parsed_goodbye
 								},
 							};
 
@@ -780,9 +789,12 @@ export class WhatsappMessage implements INodeType {
 						};
 					});
 
+					// Parsear saltos de línea en el body
+					const parsed_buttons_body = parseEscapeSequences(buttons_body.trim());
+
 					const interactive: Record<string, unknown> = {
 						type: 'button',
-						body: { text: buttons_body.trim() },
+						body: { text: parsed_buttons_body },
 						action: { buttons: button_data },
 					};
 
@@ -800,15 +812,19 @@ export class WhatsappMessage implements INodeType {
 						const trimmedText = buttons_header_text ? buttons_header_text.trim() : '';
 						
 						if (trimmedText && trimmedText.length > 0) {
+							// Parsear saltos de línea en el header
+							const parsed_header = parseEscapeSequences(trimmedText);
 							interactive.header = {
 								type: 'text',
-								text: trimmedText,
+								text: parsed_header,
 							};
 						}
 					}
 
 					if (buttons_footer && buttons_footer.trim()) {
-						interactive.footer = { text: buttons_footer.trim() };
+						// Parsear saltos de línea en el footer
+						const parsed_footer = parseEscapeSequences(buttons_footer.trim());
+						interactive.footer = { text: parsed_footer };
 					}
 
 					main_message_body = {
@@ -819,7 +835,7 @@ export class WhatsappMessage implements INodeType {
 						interactive,
 					};
 
-					main_message_text = `Buttons: ${buttons_body}`;
+					main_message_text = `Buttons: ${parsed_buttons_body}`;
 
 				} else if (message_type === 'list') {
 					const list_body = this.getNodeParameter('list_body', i, '') as string;
@@ -901,9 +917,12 @@ export class WhatsappMessage implements INodeType {
 						await sleep(300);
 					}
 
+					// Parsear saltos de línea en el body
+					const parsed_list_body = parseEscapeSequences(list_body.trim());
+
 					const interactive: Record<string, unknown> = {
 						type: 'list',
-						body: { text: list_body.trim() },
+						body: { text: parsed_list_body },
 						action: {
 							button: list_button.trim(),
 							sections: [{ rows: row_data }],
@@ -915,15 +934,19 @@ export class WhatsappMessage implements INodeType {
 						const trimmedText = list_header_text ? list_header_text.trim() : '';
 						
 						if (trimmedText && trimmedText.length > 0) {
+							// Parsear saltos de línea en el header
+							const parsed_header = parseEscapeSequences(trimmedText);
 							interactive.header = {
 								type: 'text',
-								text: trimmedText,
+								text: parsed_header,
 							};
 						}
 					}
 
 					if (list_footer && list_footer.trim()) {
-						interactive.footer = { text: list_footer.trim() };
+						// Parsear saltos de línea en el footer
+						const parsed_footer = parseEscapeSequences(list_footer.trim());
+						interactive.footer = { text: parsed_footer };
 					}
 
 					main_message_body = {
@@ -934,7 +957,7 @@ export class WhatsappMessage implements INodeType {
 						interactive: interactive,
 					};
 
-					main_message_text = `Lista: ${list_body}`;
+					main_message_text = `Lista: ${parsed_list_body}`;
 
 				} else if (message_type === 'cta') {
 					const cta_body = this.getNodeParameter('cta_body', i, '') as string;
@@ -1008,9 +1031,12 @@ URL recibida: ${parts[2]}`,
 						);
 					}
 
+					// Parsear saltos de línea en el body
+					const parsed_cta_body = parseEscapeSequences(cta_body.trim());
+
 					const interactive: Record<string, unknown> = {
 						type: 'cta_url',
-						body: { text: cta_body.trim() },
+						body: { text: parsed_cta_body },
 						action: {
 							name: 'cta_url',
 							parameters: {
@@ -1034,15 +1060,19 @@ URL recibida: ${parts[2]}`,
 						const trimmedText = cta_header_text ? cta_header_text.trim() : '';
 						
 						if (trimmedText && trimmedText.length > 0) {
+							// Parsear saltos de línea en el header
+							const parsed_header = parseEscapeSequences(trimmedText);
 							interactive.header = {
 								type: 'text',
-								text: trimmedText,
+								text: parsed_header,
 							};
 						}
 					}
 
 					if (cta_footer && cta_footer.trim()) {
-						interactive.footer = { text: cta_footer.trim() };
+						// Parsear saltos de línea en el footer
+						const parsed_footer = parseEscapeSequences(cta_footer.trim());
+						interactive.footer = { text: parsed_footer };
 					}
 
 					main_message_body = {
@@ -1053,7 +1083,7 @@ URL recibida: ${parts[2]}`,
 						interactive,
 					};
 
-					main_message_text = `CTA: ${cta_body}`;
+					main_message_text = `CTA: ${parsed_cta_body}`;
 
 				} else {
 					const main_message = this.getNodeParameter('main_message', i, '') as string;
@@ -1071,7 +1101,9 @@ URL recibida: ${parts[2]}`,
 
 						const captionText = text_image_caption.trim() || main_message.trim();
 						if (captionText) {
-							imageObject.caption = captionText;
+							// Parsear saltos de línea en el caption
+							const parsed_caption = parseEscapeSequences(captionText);
+							imageObject.caption = parsed_caption;
 						}
 
 						main_message_body = {
@@ -1081,20 +1113,23 @@ URL recibida: ${parts[2]}`,
 							image: imageObject,
 						};
 
-						main_message_text = `Image: ${captionText}`;
+						main_message_text = `Image: ${imageObject.caption || ''}`;
 					} else {
 						if (!main_message.trim()) {
 							throw new NodeOperationError(this.getNode(), 'El mensaje no puede estar vacio');
 						}
 
+						// Parsear saltos de línea en el mensaje de texto
+						const parsed_message = parseEscapeSequences(main_message.trim());
+
 						main_message_body = {
 							messaging_product: 'whatsapp',
 							to: recipient_phone,
 							type: 'text',
-							text: { body: main_message.trim() },
+							text: { body: parsed_message },
 						};
 
-						main_message_text = main_message.trim();
+						main_message_text = parsed_message;
 					}
 				}
 
@@ -1116,7 +1151,9 @@ URL recibida: ${parts[2]}`,
 					const check_messages = check_messages_raw
 						.split('\n')
 						.map(msg => msg.trim())
-						.filter(msg => msg.length > 0);
+						.filter(msg => msg.length > 0)
+						// Parsear saltos de línea en los mensajes de espera
+						.map(msg => parseEscapeSequences(msg));
 
 					if (check_messages.length === 0) {
 						throw new NodeOperationError(this.getNode(), 'Los mensajes de espera no pueden estar vacios');
